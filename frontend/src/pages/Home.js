@@ -1,12 +1,15 @@
-{/* Import modules */}
 import React from 'react';
+import Sidebar from '../components/Sidebar';
 import ProductList from '../components/ProductList';
 
 function Home() {
   return (
-    <div>
-      <h1 className="text-3xl font-bold text-center my-6">Inventory Management System</h1>
-      <ProductList />
+    <div className="flex h-screen bg-gray-100">
+      <Sidebar />
+      <div className="flex-1 p-8">
+        <h1 className="text-2xl font-bold mb-6">Inventory</h1>
+        <ProductList />
+      </div>
     </div>
   );
 }
