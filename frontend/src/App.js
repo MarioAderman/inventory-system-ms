@@ -7,14 +7,16 @@ import Sales from './pages/Sales';
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/add-product" element={<AddProduct />} />
-        <Route path="/purchases" element={<Purchases />} />
-        <Route path="/sales" element={<Sales />} />
-      </Routes>
-    </Router>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <Router>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/add-product" element={<AddProduct />} />
+          <Route path="/purchases" element={<Purchases />} />
+          <Route path="/sales" element={<Sales />} />
+        </Routes>
+      </Router>
+    </div>
   );
 }
 

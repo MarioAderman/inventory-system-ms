@@ -1,4 +1,4 @@
-{/*import { getPurchases, getSales } from './api';
+import { getPurchases, getSales } from './api';
 
 export const calculateStock = async () => {
   try {
@@ -27,4 +27,4 @@ export const calculateStock = async () => {
     console.error('Error calculating stock:', err);
     return {};
   }
-};*/}
+};

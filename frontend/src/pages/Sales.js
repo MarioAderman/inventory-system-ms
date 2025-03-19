@@ -32,10 +32,10 @@ function Sales() {
   );
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
       <Sidebar />
       <div className="flex-1 p-8 overflow-auto">
-        <h1 className="text-2xl font-bold mb-6">Sales</h1>
+        <h1 className="text-2xl font-bold mb-6 text-gray-800 dark:text-white">Sales</h1>
         
         {/* Controls */}
         <div className="mb-4 flex justify-between items-center">
@@ -45,7 +45,7 @@ function Sales() {
               placeholder="Search sales..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-300"
             />
           </div>
           <div>
@@ -61,15 +61,15 @@ function Sales() {
         {/* Sales table */}
         {loading ? (
           <div className="flex justify-center items-center h-64">
-            <p className="text-gray-500">Loading sales...</p>
+            <p className="text-gray-500 dark:text-gray-400">Loading sales...</p>
           </div>
         ) : (
-          <div className="bg-white shadow rounded overflow-hidden">
+          <div className="bg-white dark:bg-gray-800 shadow rounded overflow-hidden">
             {sales.length === 0 ? (
-              <div className="p-4 text-center text-gray-500">No sales records found.</div>
+              <div className="p-4 text-center text-gray-500 dark:text-gray-400">No sales records found.</div>
             ) : (
             <div className="max-h-[500px] overflow-y-auto">
-              <table className="min-w-full divide-y divide-gray-200">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                 <thead className="bg-blue-500 sticky top-0 z-10">
                   <tr>
                     <th className="px-6 py-3 text-left text-white text-sm font-medium uppercase tracking-wider">

@@ -1,15 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { getProducts } from '../services/api';
-// import { calculateStock } from '../services/StockCalculator';
+import { calculateStock } from '../services/StockCalculator';
 
 function ProductList() {
   const [products, setProducts] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  // const [stockData, setStockData] = useState({});
+  const [stockData, setStockData] = useState({});
 
   useEffect(() => {
     fetchProducts();
+    fetchStockData();
   }, []);
+
+  const fetchStockData = async () => {
+    try {
+      const stock = await calculateStock();
+      setStockData(stock);
+    } catch (err) {
+      console.error('Error fetching stock data:', err);
+    }
+  };
 
   const fetchProducts = async () => {
     try {
@@ -39,16 +49,16 @@ function ProductList() {
             className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
-        <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+        <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 dark:bg-gray-700 dark:text-gray-300">
           Export
         </button>
       </div>
       
       {/* Products table */}
-      <div className="bg-white shadow rounded overflow-hidden border-gray-200">
-        <div className="max-h-[500px] overflow-y-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-blue-500 sticky top-0 z-10">
+      <div className="bg-white dark:bg-gray-800 shadow rounded overflow-hidden border-gray-200 dark:border-gray-700">
+        <div className="max-h-[700px] overflow-y-auto">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-blue-500 dark:bg-blue-800 sticky top-0 z-10">
               <tr>
                 <th className="px-6 py-3 text-left text-white text-sm font-medium uppercase tracking-wider">
                   Product Code
@@ -70,22 +80,22 @@ function ProductList() {
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-600">
               {filteredProducts.map((product) => (
                 <tr key={product.id || product.product_code} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-6 py-4 whitespace-nowrap dark:text-gray-300">
                     {product.product_code}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-6 py-4 whitespace-nowrap dark:text-gray-300">
                     {product.brand}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-6 py-4 whitespace-nowrap dark:text-gray-300">
                     {product.description}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {product.stock}
+                  <td className="px-6 py-4 whitespace-nowrap dark:text-gray-300">
+                    {stockData[product.product_code] || 0}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-6 py-4 whitespace-nowrap dark:text-gray-300">
                     ${((product.current_price || 0)).toFixed(2)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">

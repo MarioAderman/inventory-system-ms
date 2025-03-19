@@ -48,21 +48,25 @@ function AddProduct() {
   };
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
       <Sidebar />
       <div className="flex-1 p-8">
-        <h1 className="text-2xl font-bold mb-6">Add New Product</h1>
+        <h1 className="text-2xl font-bold mb-6 text-gray-800 dark:text-white">Add New Product</h1>
         
         {message.text && (
-          <div className={`p-4 mb-4 rounded ${message.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+          <div className={`p-4 mb-4 rounded ${
+            message.type === 'success' 
+            ? 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300' 
+            : 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300'
+          }`}>
             {message.text}
           </div>
         )}
         
-        <div className="bg-white shadow rounded p-6 max-w-lg">
+        <div className="bg-white dark:bg-gray-800 shadow rounded p-6 max-w-lg">
           <form onSubmit={handleSubmit}>
             <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="brand">
+              <label className="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" htmlFor="brand">
                 Brand
               </label>
               <input
@@ -71,13 +75,13 @@ function AddProduct() {
                 name="brand"
                 value={formData.brand}
                 onChange={handleChange}
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 dark:text-gray-300 dark:bg-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                 required
               />
             </div>
             
             <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="product_code">
+              <label className="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" htmlFor="product_code">
                 Product Code
               </label>
               <input
@@ -86,13 +90,13 @@ function AddProduct() {
                 name="product_code"
                 value={formData.product_code}
                 onChange={handleChange}
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 dark:text-gray-300 dark:bg-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                 required
               />
             </div>
             
             <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="description">
+              <label className="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" htmlFor="description">
                 Product Description
               </label>
               <textarea
@@ -100,13 +104,13 @@ function AddProduct() {
                 name="description"
                 value={formData.description}
                 onChange={handleChange}
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline h-32"
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 dark:text-gray-300 dark:bg-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                 required
               />
             </div>
             
             <div className="mb-6">
-              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="current_price">
+              <label className="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" htmlFor="current_price">
                 Current Price ($)
               </label>
               <input
@@ -116,7 +120,7 @@ function AddProduct() {
                 name="current_price"
                 value={formData.current_price}
                 onChange={handleChange}
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 dark:text-gray-300 dark:bg-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                 required
               />
             </div>
@@ -131,7 +135,7 @@ function AddProduct() {
               <button
                 type="button"
                 onClick={() => setFormData({ product_code: '', brand: '', description: '', current_price: '' })}
-                className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                className="bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500 text-gray-800 dark:text-gray-200 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
               >
                 Clear Form
               </button>
