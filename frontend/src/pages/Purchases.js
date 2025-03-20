@@ -45,7 +45,7 @@ function Purchases() {
               placeholder="Search purchases..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-300"
+              className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 text-gray-300"
             />
           </div>
           <div>
@@ -61,16 +61,16 @@ function Purchases() {
         {/* Purchases table */}
         {loading ? (
           <div className="flex justify-center items-center h-64">
-            <p className="text-gray-500 dark:text-gray-400">Loading purchases...</p>
+            <p className="text-gray-500 dark:text-gray-600">Loading purchases...</p>
           </div>
         ) : (
           <div className="bg-white dark:bg-gray-800 shadow rounded overflow-hidden">
             {purchases.length === 0 ? (
-              <div className="p-4 text-center text-gray-500 dark:text-gray-400">No purchase records found.</div>
+              <div className="p-4 text-center text-gray-500 dark:text-gray-600">No purchase records found.</div>
             ) : (
               <div className="max-h-[700px] overflow-y-auto">
-                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                  <thead className="bg-blue-500 sticky top-0 z-10">
+                <table className="min-w-full divide-y divide-gray-200 dark:bg-gray-800 shadow rounded overflow-hidden border-gray-600">
+                  <thead className="bg-blue-500 sticky top-0 z-10 dark:bg-blue-800 sticky top-0 z-10">
                     <tr>
                       <th className="px-6 py-3 text-left text-white text-sm font-medium uppercase tracking-wider">
                         Date
@@ -95,25 +95,25 @@ function Purchases() {
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className="bg-white divide-y divide-gray-200 dark:bg-gray-800 divide-y divide-gray-600">
                     {filteredPurchases.map((purchase) => (
-                      <tr key={purchase.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap">
+                      <tr key={purchase.id} className="hover:bg-gray-50 dark:hover:bg-gray-600">
+                        <td className="px-6 py-4 whitespace-nowrap dark:text-gray-300">
                           {new Date(purchase.purchase_date).toLocaleDateString()}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="px-6 py-4 whitespace-nowrap dark:text-gray-300">
                           {purchase.product_code}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="px-6 py-4 whitespace-nowrap dark:text-gray-300">
                           {purchase.batch_id}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="px-6 py-4 whitespace-nowrap dark:text-gray-300">
                           {purchase.quantity}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="px-6 py-4 whitespace-nowrap dark:text-gray-300">
                           ${((purchase.cost_per_unit || 0)).toFixed(2)}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="px-6 py-4 whitespace-nowrap dark:text-gray-300">
                           ${(((purchase.cost_per_unit || 0) * purchase.quantity)).toFixed(2)}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
