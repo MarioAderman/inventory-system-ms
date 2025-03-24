@@ -95,7 +95,7 @@ function Purchases() {
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200 dark:bg-gray-800 divide-y divide-gray-600">
+                  <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-600">
                     {filteredPurchases.map((purchase) => (
                       <tr key={purchase.id} className="hover:bg-gray-50 dark:hover:bg-gray-600">
                         <td className="px-6 py-4 whitespace-nowrap dark:text-gray-300">
