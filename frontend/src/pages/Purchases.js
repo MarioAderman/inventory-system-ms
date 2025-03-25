@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
+import PurchaseOrderModal from '../components/PurchaseOrderModal';
 import { getPurchases } from '../services/api';
 
 function Purchases() {
+
   const [purchases, setPurchases] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
+
 
   useEffect(() => {
     fetchPurchases();
@@ -31,9 +35,18 @@ function Purchases() {
     purchase.purchase_date?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const handlePurchaseAdded = () => {
+    fetchPurchases();
+  };
+
   return (
     <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
       <Sidebar />
+      <PurchaseOrderModal 
+        isOpen={isOpen} 
+        onClose={() => setIsOpen(false)}
+        onPurchaseAdded={handlePurchaseAdded}
+      />
       <div className="flex-1 p-8 overflow-auto">
         <h1 className="text-2xl font-bold mb-6 text-gray-800 dark:text-white">Purchases</h1>
         
@@ -49,7 +62,9 @@ function Purchases() {
             />
           </div>
           <div>
-            <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 mr-2">
+            <button 
+            onClick={() => setIsOpen(true)}
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 mr-2">
               New Purchase
             </button>
             <button className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700">
@@ -70,13 +85,13 @@ function Purchases() {
             ) : (
               <div className="max-h-[700px] overflow-y-auto">
                 <table className="min-w-full divide-y divide-gray-200 dark:bg-gray-800 shadow rounded overflow-hidden border-gray-600">
-                  <thead className="bg-blue-500 sticky top-0 z-10 dark:bg-blue-800 sticky top-0 z-10">
+                  <thead className="bg-blue-500 dark:bg-blue-800 sticky top-0 z-10">
                     <tr>
                       <th className="px-6 py-3 text-left text-white text-sm font-medium uppercase tracking-wider">
                         Date
                       </th>
                       <th className="px-6 py-3 text-left text-white text-sm font-medium uppercase tracking-wider">
-                        Product
+                        Product Code
                       </th>
                       <th className="px-6 py-3 text-left text-white text-sm font-medium uppercase tracking-wider">
                         Batch ID
@@ -85,7 +100,7 @@ function Purchases() {
                         Quantity
                       </th>
                       <th className="px-6 py-3 text-left text-white text-sm font-medium uppercase tracking-wider">
-                        Unit Price
+                        Cost Per Unit
                       </th>
                       <th className="px-6 py-3 text-left text-white text-sm font-medium uppercase tracking-wider">
                         Total

@@ -59,11 +59,11 @@ app.get('/api/purchases', async (req, res) => {
 });
 
 app.post('/api/purchases', async (req, res) => {
-  const { product_code, cost_per_unit, quantity, purchase_date } = req.body;
+  const { product_code, batch_id, quantity, cost_per_unit, purchase_date } = req.body;
   try {
     const result = await pool.query(
-      'INSERT INTO purchases (product_code, cost_per_unit, quantity, purchase_date) VALUES ($1, $2, $3, $4) RETURNING *',
-      [product_code, cost_per_unit, quantity, purchase_date]
+      'INSERT INTO purchases (product_code, batch_id, quantity, cost_per_unit, purchase_date) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+      [product_code, batch_id, quantity, cost_per_unit, purchase_date]
     );
     res.json(result.rows[0]);
   } catch (err) {
