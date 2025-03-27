@@ -11,13 +11,35 @@ function AddProduct() {
     current_price: ''
   });
 
+  const [isCustomBrand, setIsCustomBrand] = useState(false);
+  const [customBrand, setCustomBrand] = useState("");
   const [message, setMessage] = useState({ text: '', type: '' });
+
+  const brandOptions = ["MiniGT", "AutoWorld", "Johnny Lightning", "Greenlight", "Tarmac", "Inno", "Other"];
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    
+    if (name === "brand") {
+      setIsCustomBrand(value === "Other");
+      setFormData(prev => ({
+        ...prev,
+        brand: value === "Other" ? "" : value // Reset brand if "Other" is chosen
+      }));
+      setCustomBrand(""); // Reset custom brand input when dropdown changes
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
+  };
+
+  const handleCustomBrandChange = (e) => {
+    setCustomBrand(e.target.value);
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      brand: e.target.value // Ensure formData.brand is updated correctly
     }));
   };
 
@@ -32,6 +54,7 @@ function AddProduct() {
       };
       
       await addProduct(productData);
+      console.log(productData)
       setMessage({ text: 'Product added successfully!', type: 'success' });
       setFormData({ product_code: '', brand: '', description: '', current_price: '' });
     } catch (err) {
@@ -62,15 +85,31 @@ function AddProduct() {
               <label className="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" htmlFor="brand">
                 Brand
               </label>
-              <input
+              <select
                 id="brand"
-                type="text"
                 name="brand"
-                value={formData.brand}
+                value={formData.brand || "Other"}
                 onChange={handleChange}
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 dark:text-gray-300 dark:bg-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                className="shadow border rounded w-full py-2 px-3 text-gray-700 dark:text-gray-300 dark:bg-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                 required
-              />
+              >
+                <option value="">Select a Brand</option>
+                {brandOptions.map((brand) => (
+                  <option key={brand} value={brand}>{brand}</option>
+                ))}
+              </select>
+              {/* Input field for custom brand */}
+              {isCustomBrand && (
+                <input
+                  type="text"
+                  name="customBrand"
+                  placeholder="Enter custom brand"
+                  value={customBrand}
+                  onChange={handleCustomBrandChange}
+                  className="mt-2 shadow border rounded w-full py-2 px-3 text-gray-700 dark:text-gray-300 dark:bg-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  required
+                />
+              )}
             </div>
             
             <div className="mb-4">
@@ -109,7 +148,8 @@ function AddProduct() {
               <input
                 id="current_price"
                 type="number"
-                step="0.01"
+                step="1"
+                min="0"
                 name="current_price"
                 value={formData.current_price}
                 onChange={handleChange}
