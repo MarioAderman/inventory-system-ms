@@ -122,9 +122,11 @@ app.get("/api/export-csv", async (req, res) => {
     let query = "";
     // Modify query based on the requesting page
     if (page === "purchases") {
-      query = "SELECT * FROM purchases"; // Example: Export purchase data
+      query = "SELECT * FROM purchases"; // Export purchase data
     } else if (page === "sales") {
-      query = "SELECT * FROM sales"; // Example: Export sales data
+      query = "SELECT * FROM sales"; // Export sales data
+    } else if (page === "products") {
+      query = "SELECT * FROM products"; // Export products data
     }
 
     const { rows } = await pool.query(query);

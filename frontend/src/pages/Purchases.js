@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
 import OrderModal from '../components/OrderModal';
+import handleDownloadCSV from "../services/exportCSV";
 import { getPurchases } from '../services/api';
-import { exportCsv } from "../services/api";
-import { useLocation } from "react-router-dom";
 
 function Purchases() {
 
@@ -11,8 +10,6 @@ function Purchases() {
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
-  const location = useLocation();
-  const page = location.pathname.replace("/", "");
 
   useEffect(() => {
     fetchPurchases();
@@ -34,24 +31,11 @@ function Purchases() {
     purchase.product_code?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleDownloadCSV = async () => {
-    try {
-      const response = await exportCsv(page || "data"); // Default to "data" if no page
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", `export_${page}.csv`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } catch (error) {
-      console.error("Download error:", error);
-    }
-  };
-
   const handlePurchaseAdded = () => {
     fetchPurchases();
   };
+
+  const handleExport = () => handleDownloadCSV("purchases");
 
   return (
     <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
@@ -92,7 +76,7 @@ function Purchases() {
               New Purchase
             </button>
             <button 
-            onClick={handleDownloadCSV}
+            onClick={handleExport}
             className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700">
               Export
             </button>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
 import OrderModal from '../components/OrderModal';
+import handleDownloadCSV from "../services/exportCSV";
 import { getSales } from '../services/api';
 
 function Sales() {
@@ -29,6 +30,8 @@ function Sales() {
     sale.product_code?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     sale.sale_id?.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handleExport = () => handleDownloadCSV("sales");
 
   const handlePurchaseAdded = () => {
     fetchSales();
@@ -71,7 +74,9 @@ function Sales() {
             className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 mr-2">
               New Sale
             </button>
-            <button className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700">
+            <button 
+            onClick={handleExport}
+            className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700">
               Export
             </button>
           </div>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getProducts } from '../services/api';
 import { calculateStock } from '../services/StockCalculator';
+import handleDownloadCSV from "../services/exportCSV";
 
 function ProductList() {
   const [products, setProducts] = useState([]);
@@ -83,6 +84,8 @@ function ProductList() {
       
       return matchesSearchTerm;
     });
+  
+  const handleExport = () => handleDownloadCSV("products");
 
   return (
     <div>
@@ -168,14 +171,16 @@ function ProductList() {
               </div>
             </div>
           </div>
-        <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 dark:bg-gray-700 dark:text-gray-300">
+        <button 
+          onClick={handleExport}
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 dark:bg-gray-700 dark:text-gray-300">
           Export
         </button>
       </div>
       
       {/* Products table */}
       <div className="bg-white dark:bg-gray-800 shadow rounded overflow-hidden border-gray-200 dark:border-gray-700">
-        <div className="max-h-[700px] overflow-y-auto">
+        <div className="max-h-[500px] overflow-y-auto">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead className="bg-blue-500 dark:bg-blue-800 sticky top-0 z-10">
               <tr>
