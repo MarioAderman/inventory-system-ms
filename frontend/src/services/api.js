@@ -10,5 +10,6 @@ export const getPurchases = () => api.get('/purchases');
 export const addPurchase = (purchase) => api.post('/purchases', purchase);
 export const getSales = () => api.get('/sales');
 export const addSale = (sale) => api.post('/sales', sale);
+export const exportCsv = (page) => api.get(`/export-csv?page=${page}`, { responseType: "blob" })
 
 export default api;

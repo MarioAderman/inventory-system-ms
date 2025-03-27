@@ -2,6 +2,8 @@
 const express = require('express');
 const { Pool } = require('pg');
 const cors = require('cors');
+const fs = require("fs");
+const fastCsv = require("fast-csv");
 require('dotenv').config();
 
 const app = express();
@@ -107,6 +109,48 @@ app.get('/api/inventory-value', async (req, res) => {
     res.json({ value: fifoValue });
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+});
+
+app.get("/api/export-csv", async (req, res) => {
+  try {
+    const { page } = req.query; // Get the page from the request
+    if (!page) {
+      return res.status(400).send("Page parameter is required");
+    }
+
+    let query = "";
+    // Modify query based on the requesting page
+    if (page === "purchases") {
+      query = "SELECT * FROM purchases"; // Example: Export purchase data
+    } else if (page === "sales") {
+      query = "SELECT * FROM sales"; // Example: Export sales data
+    }
+
+    const { rows } = await pool.query(query);
+    if (rows.length === 0) {
+      return res.status(404).send("No data available to export.");
+    }
+
+    const csvStream = fastCsv.format({ headers: true });
+    const fileName = `export_${page || "data"}.csv`; // Dynamic file name
+    const filePath = `./${fileName}`;
+
+    const writableStream = fs.createWriteStream(filePath);
+    csvStream.pipe(writableStream);
+
+    rows.forEach(row => csvStream.write(row));
+    csvStream.end();
+
+    writableStream.on("finish", () => {
+      res.download(filePath, fileName, err => {
+        if (err) console.error("Download error:", err);
+        fs.unlinkSync(filePath); // Delete file after download
+      });
+    });
+  } catch (err) {
+    console.error("Error exporting CSV:", err);
+    res.status(500).send("Server error");
   }
 });
 

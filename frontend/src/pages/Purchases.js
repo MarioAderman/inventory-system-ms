@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
 import PurchaseOrderModal from '../components/PurchaseOrderModal';
 import { getPurchases } from '../services/api';
+import { exportCsv } from "../services/api";
+import { useLocation } from "react-router-dom";
 
 function Purchases() {
 
@@ -9,7 +11,8 @@ function Purchases() {
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
-
+  const location = useLocation();
+  const page = location.pathname.replace("/", "");
 
   useEffect(() => {
     fetchPurchases();
@@ -28,12 +31,23 @@ function Purchases() {
   };
 
   const filteredPurchases = purchases.filter(purchase => 
-    purchase.product_code?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    purchase.batch_id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    purchase.quantity?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    purchase.cost_per_unit?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    purchase.purchase_date?.toLowerCase().includes(searchTerm.toLowerCase())
+    purchase.product_code?.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handleDownloadCSV = async () => {
+    try {
+      const response = await exportCsv(page || "data"); // Default to "data" if no page
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `export_${page}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error("Download error:", error);
+    }
+  };
 
   const handlePurchaseAdded = () => {
     fetchPurchases();
@@ -55,7 +69,7 @@ function Purchases() {
           <div className="w-64">
             <input 
               type="text" 
-              placeholder="Search purchases..." 
+              placeholder="Search product code..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 text-gray-300"
@@ -67,7 +81,9 @@ function Purchases() {
             className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 mr-2">
               New Purchase
             </button>
-            <button className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700">
+            <button 
+            onClick={handleDownloadCSV}
+            className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700">
               Export
             </button>
           </div>
