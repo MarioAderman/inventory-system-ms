@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
-import PurchaseOrderModal from '../components/PurchaseOrderModal';
+import OrderModal from '../components/OrderModal';
 import { getPurchases } from '../services/api';
 import { exportCsv } from "../services/api";
 import { useLocation } from "react-router-dom";
@@ -56,10 +56,20 @@ function Purchases() {
   return (
     <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
       <Sidebar />
-      <PurchaseOrderModal 
+      <OrderModal 
         isOpen={isOpen} 
         onClose={() => setIsOpen(false)}
-        onPurchaseAdded={handlePurchaseAdded}
+        onRecordAdded={handlePurchaseAdded}
+        title="Add Purchase Order"
+        successMessage="Purchase Order added successfully!"
+        type="purchase"
+        fields={[
+          { name: "product_code", placeholder: "Product Code" },
+          { name: "batch_id", placeholder: "Batch ID" },
+          { name: "quantity", placeholder: "Quantity", type: "number", min: "1", step: "1" },
+          { name: "cost_per_unit", placeholder: "Cost Per Unit", type: "number", min: "0", step: "5" },
+          { name: "purchase_date", placeholder: "Purchase Date", type: "date" },
+        ]}
       />
       <div className="flex-1 p-8 overflow-auto">
         <h1 className="text-2xl font-bold mb-6 text-gray-800 dark:text-white">Purchases</h1>
@@ -99,7 +109,7 @@ function Purchases() {
             {purchases.length === 0 ? (
               <div className="p-4 text-center text-gray-500 dark:text-gray-600">No purchase records found.</div>
             ) : (
-              <div className="max-h-[700px] overflow-y-auto">
+              <div className="max-h-[500px] overflow-y-auto">
                 <table className="min-w-full divide-y divide-gray-200 dark:bg-gray-800 shadow rounded overflow-hidden border-gray-600">
                   <thead className="bg-blue-500 dark:bg-blue-800 sticky top-0 z-10">
                     <tr>

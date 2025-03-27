@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
+import OrderModal from '../components/OrderModal';
 import { getSales } from '../services/api';
 
 function Sales() {
   const [sales, setSales] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
     fetchSales();
@@ -25,15 +27,30 @@ function Sales() {
 
   const filteredSales = sales.filter(sale => 
     sale.product_code?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    sale.sale_id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    sale.quantity?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    sale.sold_price?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    sale.sale_date?.toLowerCase().includes(searchTerm.toLowerCase())
+    sale.sale_id?.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handlePurchaseAdded = () => {
+    fetchSales();
+  };
 
   return (
     <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
       <Sidebar />
+      <OrderModal 
+        isOpen={isOpen} 
+        onClose={() => setIsOpen(false)}
+        onRecordAdded={handlePurchaseAdded}
+        title="Add Sale Order"
+        successMessage="Sale Order added successfully!"
+        type="sale"
+        fields={[
+          { name: "product_code", placeholder: "Product Code" },
+          { name: "quantity", placeholder: "Quantity", type: "number", min: "1", step: "1"  },
+          { name: "sold_price", placeholder: "Sold Price", type: "number", min: "0", step: "5"  },
+          { name: "sale_date", placeholder: "Sale Date", type: "date" },
+        ]}
+      />
       <div className="flex-1 p-8 overflow-auto">
         <h1 className="text-2xl font-bold mb-6 text-gray-800 dark:text-white">Sales</h1>
         
@@ -49,7 +66,9 @@ function Sales() {
             />
           </div>
           <div>
-            <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 mr-2">
+            <button
+            onClick={() => setIsOpen(true)} 
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 mr-2">
               New Sale
             </button>
             <button className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700">
@@ -68,7 +87,7 @@ function Sales() {
             {sales.length === 0 ? (
               <div className="p-4 text-center text-gray-500 dark:text-gray-400">No sales records found.</div>
             ) : (
-            <div className="max-h-[700px] overflow-y-auto">
+            <div className="max-h-[500px] overflow-y-auto">
               <table className="min-w-full divide-y divide-gray-200 dark:bg-gray-800 shadow rounded overflow-hidden border-gray-600">
                 <thead className="bg-blue-500 sticky top-0 z-10 dark:bg-blue-800 sticky top-0 z-10">
                   <tr>
