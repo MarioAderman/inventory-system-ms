@@ -12,6 +12,8 @@ function AddProduct() {
   });
 
   const [message, setMessage] = useState({ text: '', type: '' });
+  const [isToggle, setIsToggle] = useState(false);
+  const options = ["HotWheels", "MiniGT", "Auto World", "Greenlight", "Johnny Lightning", "Tarmac", "Inno"]
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -20,6 +22,17 @@ function AddProduct() {
       [name]: value
     }));
   };
+
+  const handleToggle = () => {
+    setIsToggle(prevToggle => {
+      const newToggle = !prevToggle;
+      setFormData(prev => ({
+        ...prev,
+        brand: ''
+      }));
+      return newToggle;
+    });
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -58,19 +71,43 @@ function AddProduct() {
         
         <div className="bg-white dark:bg-gray-800 shadow rounded p-6 max-w-lg">
           <form onSubmit={handleSubmit}>
+
+          <label class="inline-flex items-center cursor-pointer">
+            <input type="checkbox" value="" class="sr-only peer" onChange={handleToggle} />
+            <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600 dark:peer-checked:bg-blue-600"></div>
+            <span class="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">Select or Entry?</span>
+          </label>
+
             <div className="mb-4">
               <label className="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" htmlFor="brand">
                 Brand
               </label>
-              <input
-                id="brand"
-                type="text"
-                name="brand"
-                value={formData.brand}
-                onChange={handleChange}
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 dark:text-gray-300 dark:bg-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                required
-              />
+              {isToggle ?
+                <input
+                  id="brand"
+                  type="text"
+                  name="brand"
+                  value={formData.brand}
+                  onChange={handleChange}
+                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 dark:text-gray-300 dark:bg-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  required
+                /> :
+                <select
+                  name="brand"
+                  id="brand"
+                  value={formData.brand}
+                  onChange={handleChange}
+                  required
+                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 dark:text-gray-300 dark:bg-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                >
+                  <option value="" disabled selected>--- Select an option ---</option>
+                  {options.map((option, index) => 
+                    <option key={index} value={option}>
+                      {option}
+                    </option>)
+                  }
+                </select>
+              }         
             </div>
             
             <div className="mb-4">
