@@ -30,7 +30,24 @@ pool.query('SELECT NOW()', (err, res) => {
 // 1. Products API
 app.get('/api/products', async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM products');
+    const result = await pool.query(`
+      SELECT 
+        p.product_code, 
+        p.description, 
+        p.current_price, 
+        p.brand,
+        json_agg(
+          json_build_object(
+            'batch_id', pu.batch_id,
+            'quantity', pu.quantity,
+            'cost_per_unit', pu.cost_per_unit,
+            'purchase_date', pu.purchase_date
+          ) ORDER BY pu.purchase_date ASC
+        ) AS batches
+      FROM products p
+      LEFT JOIN purchases pu ON p.product_code = pu.product_code
+      GROUP BY p.product_code, p.description, p.current_price, p.brand
+    `);
     res.json(result.rows);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -64,7 +81,7 @@ app.post('/api/purchases', async (req, res) => {
   const { product_code, batch_id, quantity, cost_per_unit, purchase_date } = req.body;
   try {
     const result = await pool.query(
-      'INSERT INTO purchases (product_code, batch_id, quantity, cost_per_unit, purchase_date) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+      'INSERT INTO purchases (product_code, batch_id, quantity, original_quantity, cost_per_unit, purchase_date) VALUES ($1, $2, $3, $3, $4, $5) RETURNING *',
       [product_code, batch_id, quantity, cost_per_unit, purchase_date]
     );
     res.json(result.rows[0]);
@@ -83,7 +100,7 @@ app.get('/api/sales', async (req, res) => {
   }
 });
 
-app.post('/api/sales', async (req, res) => {
+/* app.post('/api/sales', async (req, res) => {
   const { product_code, sold_price, quantity, sale_date } = req.body;
   try {
     const result = await pool.query(
@@ -93,6 +110,70 @@ app.post('/api/sales', async (req, res) => {
     res.json(result.rows[0]);
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+}); */
+
+app.post('/api/sales', async (req, res) => {
+  const { product_code, sold_price, quantity, sale_date } = req.body;
+  const client = await pool.connect();
+
+  try {
+    await client.query('BEGIN'); // Start transaction
+
+    // STEP 1: Check available stock for the product (sum of all batch quantities)
+    const stockQuery = `
+      SELECT COALESCE(SUM(quantity), 0) AS total_stock 
+      FROM purchases 
+      WHERE product_code = $1 AND quantity > 0
+    `;
+    const { rows: stockRows } = await client.query(stockQuery, [product_code]);
+    const totalStock = parseInt(stockRows[0].total_stock, 10);
+
+    if (totalStock < quantity) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ error: "Not enough stock available" });
+    }
+
+    // STEP 2: Insert the sale into the sales table.
+    const saleInsertQuery = `
+      INSERT INTO sales (product_code, sold_price, quantity, sale_date) 
+      VALUES ($1, $2, $3, $4) 
+      RETURNING *
+    `;
+    const saleResult = await client.query(saleInsertQuery, [product_code, sold_price, quantity, sale_date]);
+
+    // STEP 3: Deduct sold quantity from purchases (FIFO)
+    let remainingQty = quantity;
+    const batchQuery = `
+      SELECT batch_id, quantity 
+      FROM purchases 
+      WHERE product_code = $1 AND quantity > 0 
+      ORDER BY purchase_date ASC
+    `;
+    const batches = await client.query(batchQuery, [product_code]);
+
+    for (let batch of batches.rows) {
+      if (remainingQty <= 0) break;
+
+      const deductQty = Math.min(remainingQty, batch.quantity);
+      remainingQty -= deductQty;
+
+      const updateQuery = `
+        UPDATE purchases 
+        SET quantity = quantity - $1 
+        WHERE product_code = $2 AND batch_id = $3
+      `;
+      await client.query(updateQuery, [deductQty, product_code, batch.batch_id]);
+    }
+
+    await client.query('COMMIT');
+    res.json({ success: true, sale: saleResult.rows[0] });
+  } catch (error) {
+    await client.query('ROLLBACK'); // Rollback on error
+    console.error("Sale processing error:", error);
+    res.status(500).json({ error: error.message });
+  } finally {
+    client.release();
   }
 });
 

@@ -35,6 +35,22 @@ function Purchases() {
     fetchPurchases();
   };
 
+  function batchIdConcat(batch_id) {
+    let serialBatchId = '';
+    if(batch_id <= 9){
+      serialBatchId = `B000${batch_id}`;
+    } else if(batch_id <= 99){
+      serialBatchId = `B00${batch_id}`;
+    }
+    else if(batch_id <= 999){
+      serialBatchId = `B0${batch_id}`;
+    }
+    else{
+        serialBatchId = `B${batch_id}`;
+    }
+    return serialBatchId;
+  }
+
   const handleExport = () => handleDownloadCSV("purchases");
 
   return (
@@ -130,7 +146,7 @@ function Purchases() {
                           {purchase.product_code}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap dark:text-gray-300">
-                          {purchase.batch_id}
+                          {batchIdConcat(purchase.batch_id)}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap dark:text-gray-300">
                           {purchase.quantity}

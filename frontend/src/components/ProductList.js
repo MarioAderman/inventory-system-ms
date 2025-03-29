@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getProducts } from '../services/api';
-import { calculateStock } from '../services/StockCalculator';
+import { calculateStock } from '../services/stockCalculator';
 import handleDownloadCSV from "../services/exportCSV";
 
 function ProductList() {
@@ -8,6 +8,7 @@ function ProductList() {
   const [searchTerm, setSearchTerm] = useState('');
   const [stockData, setStockData] = useState({});
   const [searchMode, setSearchMode] = useState('description');
+  const [expandedProducts, setExpandedProducts] = useState([]);
 
   useEffect(() => {
     fetchProducts();
@@ -27,6 +28,7 @@ function ProductList() {
     try {
       const res = await getProducts();
       setProducts(res.data);
+      console.log(res.data);
     } catch (err) {
       console.error(err);
     }
@@ -40,6 +42,14 @@ function ProductList() {
   });
   
   const handleExport = () => handleDownloadCSV("products");
+
+  const toggleExpand = (productCode) => {
+    setExpandedProducts(prev => 
+      prev.includes(productCode)
+        ? prev.filter(code => code !== productCode)
+        : [...prev, productCode]
+    );
+  };
 
   return (
     <div>
@@ -117,7 +127,7 @@ function ProductList() {
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-600">
+            {/* <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-600">
               {filteredProducts.map((product) => (
                 <tr key={product.id || product.product_code} className="hover:bg-gray-50 dark:hover:bg-gray-600">
                   <td className="px-6 py-4 whitespace-nowrap dark:text-gray-300">
@@ -144,6 +154,62 @@ function ProductList() {
                   </td>
                 </tr>
               ))}
+            </tbody> */}
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-600">
+              {filteredProducts.map((product) => {
+                const totalStock = product.batches
+                  ? product.batches.reduce((sum, batch) => sum + batch.quantity, 0)
+                  : 0;
+                const isExpanded = expandedProducts.includes(product.product_code);
+                return (
+                  <React.Fragment key={product.product_code}>
+                    {/* Main product row */}
+                    <tr className="hover:bg-gray-50 dark:hover:bg-gray-600">
+                      <td className="px-6 py-4 whitespace-nowrap dark:text-gray-300">
+                        {product.product_code}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap dark:text-gray-300">
+                        {product.brand}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap dark:text-gray-300">
+                        {product.description}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap dark:text-gray-300 font-bold">
+                        {totalStock}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap dark:text-gray-300">
+                        ${parseFloat(product.current_price || 0).toFixed(2)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <button 
+                          onClick={() => toggleExpand(product.product_code)}
+                          className="text-blue-600 hover:text-blue-900 mr-3"
+                        >
+                          {isExpanded ? 'Collapse' : 'Expand'}
+                        </button>
+                        <button className="text-red-600 hover:text-red-900">Delete</button>
+                      </td>
+                    </tr>
+                    {/* Nested batch rows (displayed if expanded) */}
+                    {isExpanded && product.batches && product.batches.map((batch) => (
+                      <tr key={batch.batch_id} className="bg-gray-100 dark:bg-gray-700">
+                        <td className="px-6 py-2 whitespace-nowrap text-sm text-gray-500" colSpan="3">
+                          Batch: {batch.batch_id}
+                        </td>
+                        <td className="px-6 py-2 whitespace-nowrap text-sm text-gray-500">
+                          {batch.quantity}
+                        </td>
+                        <td className="px-6 py-2 whitespace-nowrap text-sm text-gray-500">
+                          ${parseFloat(batch.cost_per_unit || 0).toFixed(2)}
+                        </td>
+                        <td className="px-6 py-2 whitespace-nowrap text-sm text-gray-500">
+                          {new Date(batch.purchase_date).toLocaleDateString()}
+                        </td>
+                      </tr>
+                    ))}
+                  </React.Fragment>
+                );
+              })}
             </tbody>
           </table>
         </div>
