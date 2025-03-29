@@ -1,29 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { getProducts } from '../services/api';
-import { calculateStock } from '../services/stockCalculator';
 import handleDownloadCSV from "../services/exportCSV";
 
 function ProductList() {
   const [products, setProducts] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [stockData, setStockData] = useState({});
   const [searchMode, setSearchMode] = useState('description');
   const [expandedProducts, setExpandedProducts] = useState([]);
   const [hideZeroStock, setHideZeroStock] = useState(false);
 
   useEffect(() => {
     fetchProducts();
-    fetchStockData();
   }, []);
-
-  const fetchStockData = async () => {
-    try {
-      const stock = await calculateStock();
-      setStockData(stock);
-    } catch (err) {
-      console.error('Error fetching stock data:', err);
-    }
-  };
 
   const fetchProducts = async () => {
     try {
@@ -125,10 +113,10 @@ function ProductList() {
           <table className="min-w-full table-fixed divide-y divide-gray-200 dark:divide-gray-700">
             <thead className="bg-blue-500 dark:bg-blue-800 sticky top-0 z-10">
               <tr>
-                <th className="w-[140px] px-6 py-3 text-left text-white text-sm font-medium uppercase tracking-wider">
+                <th className="w-[160px] px-6 py-3 text-left text-white text-sm font-medium uppercase tracking-wider">
                   Product Code
                 </th>
-                <th className="w-[150px] px-6 py-3 text-left text-white text-sm font-medium uppercase tracking-wider">
+                <th className="w-[140px] px-6 py-3 text-left text-white text-sm font-medium uppercase tracking-wider">
                   Brand
                 </th>
                 <th className="w-[120px] px-6 py-3 text-left text-white text-sm font-medium uppercase tracking-wider">
@@ -137,10 +125,13 @@ function ProductList() {
                 <th className="w-[120px] px-6 py-3 text-left text-white text-sm font-medium uppercase tracking-wider">
                   Stock
                 </th>
-                <th className="w-[120px] px-6 py-3 text-left text-white text-sm font-medium uppercase tracking-wider">
-                  Cost
+                <th className="w-[140px] px-6 py-3 text-left text-white text-sm font-medium uppercase tracking-wider">
+                  Unit Cost
                 </th>
                 <th className="w-[140px] px-6 py-3 text-left text-white text-sm font-medium uppercase tracking-wider">
+                  Total Cost
+                </th>
+                <th className="w-[160px] px-6 py-3 text-left text-white text-sm font-medium uppercase tracking-wider">
                   Current Price
                 </th>
                 <th className="w-[120px] px-6 py-3 text-right text-white text-sm font-medium uppercase tracking-wider">
@@ -170,7 +161,7 @@ function ProductList() {
                       <td className="w-[500px] px-6 py-4 whitespace-nowrap dark:text-gray-300">
                         {product.description}
                       </td>
-                      <td className="w-[100px] px-6 py-4 whitespace-nowrap dark:text-gray-300 font-bold">
+                      <td className="w-[100px] px-6 py-4 whitespace-nowrap dark:text-gray-300 font-bold" colSpan="2">
                         {totalStock}
                       </td>
                       <td className="w-[120px] px-6 py-4 whitespace-nowrap dark:text-gray-300">
@@ -198,8 +189,11 @@ function ProductList() {
                         <td className="px-6 py-2 whitespace-nowrap text-sm text-gray-500">
                           {batch.quantity}
                         </td>
-                        <td className="px-6 py-2 whitespace-nowrap text-sm text-gray-500" colSpan="2">
+                        <td className="px-6 py-2 whitespace-nowrap text-sm text-gray-500">
                           ${parseFloat(batch.cost_per_unit || 0).toFixed(2)}
+                        </td>
+                        <td className="px-6 py-2 whitespace-nowrap text-sm text-gray-500" colSpan="2">
+                          ${parseFloat(batch.quantity * batch.cost_per_unit || 0).toFixed(2)}
                         </td>
                         <td className="px-6 py-2 whitespace-nowrap text-sm text-gray-500">
                           {new Date(batch.purchase_date).toLocaleDateString()}

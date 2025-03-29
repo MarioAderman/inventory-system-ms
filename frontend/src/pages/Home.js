@@ -1,6 +1,6 @@
 import React from 'react';
 import Sidebar from '../components/Sidebar';
-import ProductList from '../components/ProductList';
+import ProductsList from '../components/ProductsList';
 
 function Home() {
   return (
@@ -8,7 +8,7 @@ function Home() {
       <Sidebar />
       <div className="flex-1 p-8">
         <h1 className="text-2xl font-bold mb-6 text-gray-800 dark:text-white">Inventory</h1>
-        <ProductList />
+        <ProductsList />
       </div>
     </div>
   );
