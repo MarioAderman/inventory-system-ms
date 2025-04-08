@@ -3,12 +3,15 @@ import Sidebar from '../components/Sidebar';
 import OrderModal from '../components/OrderModal';
 import handleDownloadCSV from "../services/exportCSV";
 import { getSales } from '../services/api';
+import EditModal from '../components/EditModal';
 
 function Sales() {
   const [sales, setSales] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedSale, setSelectedSale] = useState(null);
 
   useEffect(() => {
     fetchSales();
@@ -30,6 +33,13 @@ function Sales() {
     sale.product_code?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     sale.sale_id?.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handleSaleEdited = (editedFields) => {
+    const updatedSales = sales.map(sale =>
+      sale.id === selectedSale.id ? { ...sale, ...editedFields } : sale
+    );
+    setSales(updatedSales);
+  };
 
   const handleExport = () => handleDownloadCSV("sales");
 
@@ -54,6 +64,21 @@ function Sales() {
           { name: "sale_date", placeholder: "Sale Date", type: "date" },
         ]}
       />
+      {showEditModal && selectedSale && (
+        <EditModal 
+          isOpen={showEditModal} 
+          item={selectedSale} 
+          onClose={() => setShowEditModal(false)} 
+          onItemEdited={handleSaleEdited}
+          title="Edit Sale Order"
+          fields={[
+            { name: "product_code", placeholder: "Product Code" },
+            { name: "quantity", placeholder: "Quantity", type: "number", min: "1", step: "1"  },
+            { name: "sold_price", placeholder: "Sold Price", type: "number", min: "0", step: "5"  },
+            { name: "sale_date", placeholder: "Sale Date", type: "date" },
+          ]}
+        />
+      )}
       <div className="flex-1 p-8 overflow-auto">
         <h1 className="text-2xl font-bold mb-6 text-gray-800 dark:text-white">Sales</h1>
         
@@ -141,8 +166,20 @@ function Sales() {
                         ${(((sale.sold_price || 0) * sale.quantity)).toFixed(2)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <button className="text-blue-600 hover:text-blue-900 mr-3">Details</button>
-                        <button className="text-green-600 hover:text-green-900">Invoice</button>
+                      <button 
+                          onClick={() => {
+                            setSelectedSale(sale);
+                            setShowEditModal(true);
+                          }}
+                          className="text-green-600 hover:text-green-900 mr-3"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          className="text-red-600 hover:text-red-900"
+                        >
+                          Delete
+                        </button>
                       </td>
                     </tr>
                   ))}

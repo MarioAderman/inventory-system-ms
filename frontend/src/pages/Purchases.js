@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
 import OrderModal from '../components/OrderModal';
+import EditModal from '../components/EditModal';
 import handleDownloadCSV from "../services/exportCSV";
 import { getPurchases } from '../services/api';
 
@@ -10,6 +11,8 @@ function Purchases() {
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedPurchase, setSelectedPurchase] = useState(null);
 
   useEffect(() => {
     fetchPurchases();
@@ -33,6 +36,13 @@ function Purchases() {
 
   const handlePurchaseAdded = () => {
     fetchPurchases();
+  };
+
+  const handlePurchaseEdited = (editedFields) => {
+    const updatedPurchases = purchases.map(purchase =>
+      purchase.id === selectedPurchase.id ? { ...purchase, ...editedFields } : purchase
+    );
+    setPurchases(updatedPurchases);
   };
 
   function batchIdConcat(batch_id) {
@@ -71,6 +81,22 @@ function Purchases() {
           { name: "purchase_date", placeholder: "Purchase Date", type: "date" },
         ]}
       />
+      {showEditModal && selectedPurchase && (
+        <EditModal 
+          isOpen={showEditModal} 
+          item={selectedPurchase} 
+          onClose={() => setShowEditModal(false)} 
+          onItemEdited={handlePurchaseEdited}
+          title="Edit Purchase Order"
+          fields={[
+            { name: "product_code", placeholder: "Product Code" },
+            { name: "batch_id", placeholder: "Batch ID" },
+            { name: "quantity", placeholder: "Quantity", type: "number", min: "1", step: "1" },
+            { name: "cost_per_unit", placeholder: "Cost Per Unit", type: "number", min: "0", step: "5" },
+            { name: "purchase_date", placeholder: "Purchase Date", type: "date" },
+          ]}
+        />
+      )}
       <div className="flex-1 p-8 overflow-auto">
         <h1 className="text-2xl font-bold mb-6 text-gray-800 dark:text-white">Purchases</h1>
         
@@ -158,7 +184,20 @@ function Purchases() {
                           ${(((purchase.cost_per_unit || 0) * purchase.quantity)).toFixed(2)}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <button className="text-blue-600 hover:text-blue-900 mr-3">Details</button>
+                        <button 
+                            onClick={() => {
+                              setSelectedPurchase(purchase);
+                              setShowEditModal(true);
+                            }}
+                            className="text-green-600 hover:text-green-900 mr-3"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            className="text-red-600 hover:text-red-900"
+                          >
+                            Delete
+                          </button>
                         </td>
                       </tr>
                     ))}
