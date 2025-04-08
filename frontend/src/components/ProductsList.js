@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getProducts } from '../services/api';
 import handleDownloadCSV from "../services/exportCSV";
+import EditModal from '../components/EditModal';
 
 function ProductList() {
   const [products, setProducts] = useState([]);
@@ -8,6 +9,9 @@ function ProductList() {
   const [searchMode, setSearchMode] = useState('description');
   const [expandedProducts, setExpandedProducts] = useState([]);
   const [hideZeroStock, setHideZeroStock] = useState(false);
+
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
   useEffect(() => {
     fetchProducts();
@@ -47,6 +51,31 @@ function ProductList() {
 
   const toggleHideZeroStock = () => {
     setHideZeroStock((prev) => !prev);
+  };
+
+  // NEW: Function to open the edit modal
+  const handleOpenEdit = (product) => {
+    setSelectedProduct(product);
+    setShowEditModal(true);
+  };
+
+  // NEW: Function to close the edit modal
+  const handleCloseEdit = () => {
+    setShowEditModal(false);
+    setSelectedProduct(null);
+  };
+
+  const handleProductEdited = (editedFields) => {
+    const updatedProduct = {
+      ...selectedProduct,
+      product_code: editedFields.product_code || selectedProduct.product_code,
+      brand: editedFields.brand || selectedProduct.brand,
+      description: editedFields.description || selectedProduct.description,
+      current_price: editedFields.current_price || selectedProduct.current_price,
+    };
+    setProducts(products.map(prod =>
+      prod.product_code === selectedProduct.product_code ? updatedProduct : prod
+    ));
   };
 
   return (
@@ -103,7 +132,7 @@ function ProductList() {
         <button 
           onClick={handleExport}
           className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 dark:bg-gray-700 dark:text-gray-300">
-          Export
+          Export CSV
         </button>
       </div>
       
@@ -177,6 +206,12 @@ function ProductList() {
                         >
                           {isExpanded ? 'Collapse' : 'Expand'}
                         </button>
+                        <button 
+                          onClick={() => handleOpenEdit(product)}
+                          className="text-green-600 hover:text-green-900 mr-3"
+                        >
+                          Edit
+                        </button>
                         <button className="text-red-600 hover:text-red-900">Delete</button>
                       </td>
                     </tr>
@@ -207,6 +242,14 @@ function ProductList() {
           </table>
         </div>
       </div>
+      {showEditModal && selectedProduct && (
+        <EditModal 
+          isOpen={showEditModal} 
+          product={selectedProduct} 
+          onClose={handleCloseEdit} 
+          onProductEdited={handleProductEdited}
+        />
+      )}
     </div>
   );
 }
