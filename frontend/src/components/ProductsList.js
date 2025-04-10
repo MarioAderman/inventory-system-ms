@@ -8,8 +8,7 @@ function ProductList() {
   const [searchTerm, setSearchTerm] = useState('');
   const [searchMode, setSearchMode] = useState('description');
   const [expandedProducts, setExpandedProducts] = useState([]);
-  const [hideZeroStock, setHideZeroStock] = useState(false);
-
+  const [hideZeroStock, setHideZeroStock] = useState(true);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
 

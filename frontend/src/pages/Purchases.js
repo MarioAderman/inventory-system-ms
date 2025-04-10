@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import Sidebar from '../components/Sidebar';
 import OrderModal from '../components/OrderModal';
 import EditModal from '../components/EditModal';
+import DeleteModal from '../components/DeleteModal';
 import handleDownloadCSV from "../services/exportCSV";
 import { getPurchases } from '../services/api';
 
@@ -12,7 +13,9 @@ function Purchases() {
   const [loading, setLoading] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedPurchase, setSelectedPurchase] = useState(null);
+  const [selectedDelPurchase, setSelectedDelPurchase] = useState(null);
   const [sortOrder, setSortOrder] = useState('desc');
 
   useEffect(() => {
@@ -23,7 +26,7 @@ function Purchases() {
     try {
       setLoading(true);
       const res = await getPurchases();
-      setPurchases(res.data);
+      setPurchases(res.data.filter(p => !p.is_deleted));
       setLoading(false);
     } catch (err) {
       console.error(err);
@@ -48,6 +51,10 @@ function Purchases() {
   };
 
   const handlePurchaseEdited = () => {
+    fetchPurchases();
+  };
+
+  const handlePurchaseDeleted = () => {
     fetchPurchases();
   };  
 
@@ -102,6 +109,15 @@ function Purchases() {
           { name: "cost_per_unit", placeholder: "Cost Per Unit", type: "number", min: "0", step: "5" },
           { name: "purchase_date", placeholder: "Purchase Date", type: "date" },
         ]}
+      />
+      <DeleteModal
+        isOpen={showDeleteModal} 
+        item={selectedDelPurchase} 
+        onClose={() => setShowDeleteModal(false)} 
+        onItemEdited={handlePurchaseDeleted}
+        title="Delete Purchase Order"
+        successMessage="Purchase Order deleted successfully!"
+        type="purchase"
       />
       <div className="flex-1 p-8 overflow-auto">
         <h1 className="text-2xl font-bold mb-6 text-gray-800 dark:text-white">Purchases</h1>
@@ -222,6 +238,10 @@ function Purchases() {
                             Edit
                           </button>
                           <button
+                            onClick={() => {
+                              setSelectedDelPurchase(purchase);
+                              setShowDeleteModal(true);
+                            }}
                             className="text-red-600 hover:text-red-900"
                           >
                             Delete

@@ -6,12 +6,19 @@ const api = axios.create({
 
 export const getProducts = () => api.get('/products');
 export const addProduct = (product) => api.post('/products', product);
+export const updateProduct = (id, data) => api.put(`/products/${id}`, data);
+export const deleteProduct = (id) => api.delete(`/products/${id}`);
+
 export const getPurchases = () => api.get('/purchases');
 export const addPurchase = (purchase) => api.post('/purchases', purchase);
+export const updatePurchase = (id, data) => api.put(`/purchases/${id}`, data);
+export const deletePurchase = (id) => api.delete(`/purchases/${id}`);
+
 export const getSales = () => api.get('/sales');
 export const addSale = (sale) => api.post('/sales', sale);
-export const exportCsv = (page) => api.get(`/export-csv?page=${page}`, { responseType: "blob" })
-export const updatePurchase = (id, data) => api.put(`/purchases/${id}`, data);
+export const updateSale = (id, data) => api.put(`/sales/${id}`, data);
+export const deleteSale = (id) => api.delete(`/sales/${id}`);
 
+export const exportCsv = (page) => api.get(`/export-csv?page=${page}`, { responseType: "blob" })
 
 export default api;
