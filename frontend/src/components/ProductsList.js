@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { getProducts } from '../services/api';
 import handleDownloadCSV from "../services/exportCSV";
 import EditModal from '../components/EditModal';
+import DeleteModal from '../components/DeleteModal';
 
 function ProductList() {
   const [products, setProducts] = useState([]);
@@ -10,7 +11,9 @@ function ProductList() {
   const [expandedProducts, setExpandedProducts] = useState([]);
   const [hideZeroStock, setHideZeroStock] = useState(true);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [selectedDelProduct, setSelectedDelProduct] = useState(null);
 
   useEffect(() => {
     fetchProducts();
@@ -20,7 +23,6 @@ function ProductList() {
     try {
       const res = await getProducts();
       setProducts(res.data);
-      console.log(res.data);
     } catch (err) {
       console.error(err);
     }
@@ -64,21 +66,40 @@ function ProductList() {
     setSelectedProduct(null);
   };
 
-  const handleProductEdited = (editedFields) => {
-    const updatedProduct = {
-      ...selectedProduct,
-      product_code: editedFields.product_code || selectedProduct.product_code,
-      brand: editedFields.brand || selectedProduct.brand,
-      description: editedFields.description || selectedProduct.description,
-      current_price: editedFields.current_price || selectedProduct.current_price,
-    };
-    setProducts(products.map(prod =>
-      prod.product_code === selectedProduct.product_code ? updatedProduct : prod
-    ));
+  const handleProductEdited = () => {
+    fetchProducts();
   };
+
+  const handleProductDeleted = () => {
+    fetchProducts();
+  }; 
 
   return (
     <div>
+      <EditModal 
+        isOpen={showEditModal} 
+        item={selectedProduct} 
+        onClose={() => handleCloseEdit()} 
+        onItemEdited={handleProductEdited}
+        title="Edit Product Info"
+        successMessage="Product updated successfully!"
+        type="product"
+        fields={[
+          { name: "product_code", placeholder: "Product Code" },
+          { name: "brand", placeholder: "Brand" },
+          { name: "description", placeholder: "Description"},
+          { name: "current_price", placeholder: "Current Price", type: "number", min: "0", step: "5" },
+        ]}
+      />
+      <DeleteModal
+        isOpen={showDeleteModal} 
+        item={selectedDelProduct} 
+        onClose={() => setShowDeleteModal(false)} 
+        onItemEdited={handleProductDeleted}
+        title="Delete Product"
+        successMessage="Product deleted successfully!"
+        type="product"
+      />
       {/* Search and filters row */}
       <div className="mb-4 flex justify-between items-center">
         <div className="flex items-center space-x-4">
@@ -206,12 +227,21 @@ function ProductList() {
                           {isExpanded ? 'Collapse' : 'Expand'}
                         </button>
                         <button 
-                          onClick={() => handleOpenEdit(product)}
+                          onClick={() => 
+                            handleOpenEdit(product)
+                          }
                           className="text-green-600 hover:text-green-900 mr-3"
                         >
                           Edit
                         </button>
-                        <button className="text-red-600 hover:text-red-900">Delete</button>
+                        <button 
+                          onClick={() => {
+                            setSelectedDelProduct(product);
+                            setShowDeleteModal(true);
+                          }}
+                          className="text-red-600 hover:text-red-900">
+                          Delete
+                        </button>
                       </td>
                     </tr>
                     {/* Nested batch rows (displayed if expanded) */}
@@ -241,14 +271,6 @@ function ProductList() {
           </table>
         </div>
       </div>
-      {showEditModal && selectedProduct && (
-        <EditModal 
-          isOpen={showEditModal} 
-          product={selectedProduct} 
-          onClose={handleCloseEdit} 
-          onProductEdited={handleProductEdited}
-        />
-      )}
     </div>
   );
 }

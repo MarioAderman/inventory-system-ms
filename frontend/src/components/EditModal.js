@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { updatePurchase } from '../services/api'; // Update this path/logic based on type
+import { updateProduct } from '../services/api';
+import { updateSale } from '../services/api';
 
 export default function EditModal(props) {
   const [formData, setFormData] = useState({});
@@ -26,7 +28,17 @@ export default function EditModal(props) {
         }
         await updatePurchase(formData.purchase_id, formData); // assumes `id` is part of formData
       } else if (props.type === 'sale') {
-        // Add updateSale here if needed
+        if (!formData.sale_id) {
+          console.error("Missing sale_id for update");
+          return;
+        }
+        await updateSale(formData.sale_id, formData);
+      } else if (props.type === 'product') {
+        if (!formData.product_id) {
+          console.error("Missing product for update");
+          return;
+        }
+        await updateProduct(formData.product_id, formData)
       }
 
       props.onItemEdited(formData);

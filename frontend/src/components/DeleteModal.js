@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { deletePurchase } from '../services/api';
+import { deleteProduct } from '../services/api';
+import { deleteSale } from '../services/api';
 
 export default function DeleteModal(props) {
 
@@ -10,12 +12,25 @@ export default function DeleteModal(props) {
         e.preventDefault();
         
         try {
-            if (props.type === 'purchase') 
+            if (props.type === 'purchase') { 
                 if (!props.item) {
                     console.error("Missing purchase_id for delete");
                 return;
                 }
                 await deletePurchase(props.item.purchase_id); // assumes `id` is part of formData
+            } else if (props.type === 'sale') {
+                if (!props.item) {
+                    console.error("Missing sale_id for delete");
+                return;
+                }
+                await deleteSale(props.item.sale_id);
+            } else if (props.type === 'product') {
+                if (!props.item) {
+                    console.error("Missing product_id for delete");
+                return;
+                }
+                await deleteProduct(props.item.product_id);
+            }
 
             setMessage({ text: props.successMessage, type: 'success' });
 

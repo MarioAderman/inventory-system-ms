@@ -31,10 +31,11 @@ pool.query('SELECT NOW()', (err, res) => {
 app.get('/api/products', async (req, res) => {
   try {
     const result = await pool.query(`
-      SELECT 
+      SELECT
+        p.product_id, 
         p.product_code, 
         p.description, 
-        p.current_price, 
+        p.current_price,
         p.brand,
         json_agg(
           json_build_object(
@@ -42,12 +43,16 @@ app.get('/api/products', async (req, res) => {
             'quantity', pu.quantity,
             'cost_per_unit', pu.cost_per_unit,
             'purchase_date', pu.purchase_date
-          ) ORDER BY pu.purchase_date ASC
+          ) 
+          ORDER BY pu.batch_id DESC
         ) AS batches
       FROM products p
-      LEFT JOIN purchases pu ON p.product_code = pu.product_code AND pu.is_deleted = false
+      LEFT JOIN purchases pu 
+        ON p.product_id = pu.product_id 
+        AND pu.is_deleted = false
       WHERE p.is_deleted = false
-      GROUP BY p.product_code, p.description, p.current_price, p.brand
+      GROUP BY p.product_id, p.product_code, p.description, p.current_price, p.brand
+      ORDER BY p.brand ASC, p.product_code ASC
     `);
     res.json(result.rows);
   } catch (err) {
@@ -68,6 +73,57 @@ app.post('/api/products', async (req, res) => {
   }
 });
 
+app.put('/api/products/:product_id', async (req, res) => {
+  const { product_id } = req.params;
+  const { product_code, brand, description, current_price } = req.body;
+
+  try {
+    // Prevent editing soft-deleted records
+    const existing = await pool.query(
+      'SELECT * FROM products WHERE product_id = $1 AND is_deleted = false',
+      [product_id]
+    );
+    if (existing.rowCount === 0) {
+      return res.status(404).json({ error: 'Product not found or already deleted.' });
+    }
+
+    // Update with optional manual `updated_at` (if no trigger)
+    const result = await pool.query(
+      `UPDATE products 
+       SET product_code=$1, brand=$2, description=$3, current_price=$4, updated_at=NOW()
+       WHERE product_id=$5 
+       RETURNING *`,
+      [product_code, brand, description, current_price, product_id]
+    );
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/api/products/:product_id', async (req, res) => {
+  const { product_id } = req.params;
+
+  try {
+    const result = await pool.query(
+      `UPDATE products 
+       SET is_deleted = true, deleted_at = NOW() 
+       WHERE product_id = $1 AND is_deleted = false 
+       RETURNING *`,
+      [product_id]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'Product already deleted or not found.' });
+    }
+
+    res.json({ message: 'Product deleted successfully.', record: result.rows[0] });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // 2. Purchases (ins) API
 app.get('/api/purchases', async (req, res) => {
   try {
@@ -81,12 +137,23 @@ app.get('/api/purchases', async (req, res) => {
 app.post('/api/purchases', async (req, res) => {
   const { product_code, batch_id, quantity, cost_per_unit, purchase_date } = req.body;
   try {
-    const result = await pool.query(
-      `INSERT INTO purchases (product_code, batch_id, quantity, original_quantity, cost_per_unit, purchase_date) 
-      VALUES ($1, $2, $3, $3, $4, $5) 
-      RETURNING *`,
-      [product_code, batch_id, quantity, cost_per_unit, purchase_date]
+
+    const productResult = await pool.query(
+      'SELECT product_id FROM products WHERE product_code = $1 AND is_deleted = false',
+      [product_code]
     );
+    if (productResult.rowCount === 0) {
+      return res.status(404).json({ error: 'Product not found.' });
+    }
+    const product_id = productResult.rows[0].product_id;
+
+    const result = await pool.query(
+      `INSERT INTO purchases (product_code, product_id, batch_id, quantity, original_quantity, cost_per_unit, purchase_date) 
+       VALUES ($1, $2, $3, $4, $4, $5, $6) 
+       RETURNING *`,
+      [product_code, product_id, batch_id, quantity, cost_per_unit, purchase_date]
+    );
+
     res.json(result.rows[0]);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -160,6 +227,16 @@ app.post('/api/sales', async (req, res) => {
   try {
     await client.query('BEGIN'); // Start transaction
 
+    const productResult = await client.query(
+      'SELECT product_id FROM products WHERE product_code = $1 AND is_deleted = false',
+      [product_code]
+    );
+    if (productResult.rowCount === 0) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ error: 'Product not found.' });
+    }
+    const product_id = productResult.rows[0].product_id;
+
     // STEP 1: Check available stock for the product (sum of all batch quantities)
     const stockQuery = `
       SELECT COALESCE(SUM(quantity), 0) AS total_stock 
@@ -176,11 +253,13 @@ app.post('/api/sales', async (req, res) => {
 
     // STEP 2: Insert the sale into the sales table.
     const saleInsertQuery = `
-      INSERT INTO sales (product_code, sold_price, quantity, sale_date) 
-      VALUES ($1, $2, $3, $4) 
+      INSERT INTO sales (product_code, product_id, sold_price, quantity, sale_date) 
+      VALUES ($1, $2, $3, $4, $5) 
       RETURNING *
     `;
-    const saleResult = await client.query(saleInsertQuery, [product_code, sold_price, quantity, sale_date]);
+    const saleResult = await client.query(saleInsertQuery, [
+      product_code, product_id, sold_price, quantity, sale_date
+    ]);
 
     // STEP 3: Deduct sold quantity from purchases (FIFO)
     let remainingQty = quantity;

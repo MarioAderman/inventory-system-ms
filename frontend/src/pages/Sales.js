@@ -43,7 +43,7 @@ function Sales() {
 
   const handleExport = () => handleDownloadCSV("sales");
 
-  const handlePurchaseAdded = () => {
+  const handleSaleAdded = () => {
     fetchSales();
   };
 
@@ -53,7 +53,7 @@ function Sales() {
       <OrderModal 
         isOpen={isOpen} 
         onClose={() => setIsOpen(false)}
-        onRecordAdded={handlePurchaseAdded}
+        onRecordAdded={handleSaleAdded}
         title="Add Sale Order"
         successMessage="Sale Order added successfully!"
         type="sale"
