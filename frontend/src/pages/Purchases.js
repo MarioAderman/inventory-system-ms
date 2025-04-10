@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Sidebar from '../components/Sidebar';
 import OrderModal from '../components/OrderModal';
 import EditModal from '../components/EditModal';
@@ -13,6 +13,7 @@ function Purchases() {
   const [isOpen, setIsOpen] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedPurchase, setSelectedPurchase] = useState(null);
+  const [sortOrder, setSortOrder] = useState('desc');
 
   useEffect(() => {
     fetchPurchases();
@@ -30,20 +31,25 @@ function Purchases() {
     }
   };
 
-  const filteredPurchases = purchases.filter(purchase => 
-    purchase.product_code?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredPurchases = useMemo(() => {
+    const filtered = purchases.filter(purchase =>
+      purchase.product_code?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  
+    return filtered.sort((a, b) => {
+      const dateA = new Date(a.purchase_date);
+      const dateB = new Date(b.purchase_date);
+      return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
+    });
+  }, [purchases, searchTerm, sortOrder]);
 
   const handlePurchaseAdded = () => {
     fetchPurchases();
   };
 
-  const handlePurchaseEdited = (editedFields) => {
-    const updatedPurchases = purchases.map(purchase =>
-      purchase.id === selectedPurchase.id ? { ...purchase, ...editedFields } : purchase
-    );
-    setPurchases(updatedPurchases);
-  };
+  const handlePurchaseEdited = () => {
+    fetchPurchases();
+  };  
 
   function batchIdConcat(batch_id) {
     let serialBatchId = '';
@@ -81,22 +87,22 @@ function Purchases() {
           { name: "purchase_date", placeholder: "Purchase Date", type: "date" },
         ]}
       />
-      {showEditModal && selectedPurchase && (
-        <EditModal 
-          isOpen={showEditModal} 
-          item={selectedPurchase} 
-          onClose={() => setShowEditModal(false)} 
-          onItemEdited={handlePurchaseEdited}
-          title="Edit Purchase Order"
-          fields={[
-            { name: "product_code", placeholder: "Product Code" },
-            { name: "batch_id", placeholder: "Batch ID" },
-            { name: "quantity", placeholder: "Quantity", type: "number", min: "1", step: "1" },
-            { name: "cost_per_unit", placeholder: "Cost Per Unit", type: "number", min: "0", step: "5" },
-            { name: "purchase_date", placeholder: "Purchase Date", type: "date" },
-          ]}
-        />
-      )}
+      <EditModal 
+        isOpen={showEditModal} 
+        item={selectedPurchase} 
+        onClose={() => setShowEditModal(false)} 
+        onItemEdited={handlePurchaseEdited}
+        title="Edit Purchase Order"
+        successMessage="Purchase Order updated successfully!"
+        type="purchase"
+        fields={[
+          { name: "product_code", placeholder: "Product Code" },
+          { name: "batch_id", placeholder: "Batch ID" },
+          { name: "quantity", placeholder: "Quantity", type: "number", min: "1", step: "1" },
+          { name: "cost_per_unit", placeholder: "Cost Per Unit", type: "number", min: "0", step: "5" },
+          { name: "purchase_date", placeholder: "Purchase Date", type: "date" },
+        ]}
+      />
       <div className="flex-1 p-8 overflow-auto">
         <h1 className="text-2xl font-bold mb-6 text-gray-800 dark:text-white">Purchases</h1>
         
@@ -110,6 +116,28 @@ function Purchases() {
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 text-gray-300"
             />
+          </div>
+          <div className="mb-2 flex items-center space-x-4">
+            <label className="flex items-center space-x-2">
+              <input
+                type="radio"
+                value="asc"
+                checked={sortOrder === 'asc'}
+                onChange={() => setSortOrder('asc')}
+                className="form-radio h-4 w-4 text-blue-600"
+              />
+              <span className="text-gray-700 dark:text-gray-300">Oldest First</span>
+            </label>
+            <label className="flex items-center space-x-2">
+              <input
+                type="radio"
+                value="desc"
+                checked={sortOrder === 'desc'}
+                onChange={() => setSortOrder('desc')}
+                className="form-radio h-4 w-4 text-blue-600"
+              />
+              <span className="text-gray-700 dark:text-gray-300">Newest First</span>
+            </label>
           </div>
           <div>
             <button 
@@ -164,7 +192,7 @@ function Purchases() {
                   </thead>
                   <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-600">
                     {filteredPurchases.map((purchase) => (
-                      <tr key={purchase.id} className="hover:bg-gray-50 dark:hover:bg-gray-600">
+                      <tr key={purchase.purchase_id} className="hover:bg-gray-50 dark:hover:bg-gray-600">
                         <td className="px-6 py-4 whitespace-nowrap dark:text-gray-300">
                           {new Date(purchase.purchase_date).toLocaleDateString()}
                         </td>

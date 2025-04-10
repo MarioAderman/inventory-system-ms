@@ -45,7 +45,8 @@ app.get('/api/products', async (req, res) => {
           ) ORDER BY pu.purchase_date ASC
         ) AS batches
       FROM products p
-      LEFT JOIN purchases pu ON p.product_code = pu.product_code
+      LEFT JOIN purchases pu ON p.product_code = pu.product_code AND pu.is_deleted = false
+      WHERE p.is_deleted = false
       GROUP BY p.product_code, p.description, p.current_price, p.brand
     `);
     res.json(result.rows);
@@ -70,7 +71,7 @@ app.post('/api/products', async (req, res) => {
 // 2. Purchases (ins) API
 app.get('/api/purchases', async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM purchases');
+    const result = await pool.query('SELECT * FROM purchases WHERE is_deleted = false');
     res.json(result.rows);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -81,7 +82,9 @@ app.post('/api/purchases', async (req, res) => {
   const { product_code, batch_id, quantity, cost_per_unit, purchase_date } = req.body;
   try {
     const result = await pool.query(
-      'INSERT INTO purchases (product_code, batch_id, quantity, original_quantity, cost_per_unit, purchase_date) VALUES ($1, $2, $3, $3, $4, $5) RETURNING *',
+      `INSERT INTO purchases (product_code, batch_id, quantity, original_quantity, cost_per_unit, purchase_date) 
+      VALUES ($1, $2, $3, $3, $4, $5) 
+      RETURNING *`,
       [product_code, batch_id, quantity, cost_per_unit, purchase_date]
     );
     res.json(result.rows[0]);
@@ -90,28 +93,65 @@ app.post('/api/purchases', async (req, res) => {
   }
 });
 
-// 3. Sales (outs) API
-app.get('/api/sales', async (req, res) => {
+app.put('/api/purchases/:id', async (req, res) => {
+  const { id } = req.params;
+  const { product_code, batch_id, quantity, cost_per_unit, purchase_date } = req.body;
+
   try {
-    const result = await pool.query('SELECT * FROM sales');
-    res.json(result.rows);
+    // Prevent editing soft-deleted records
+    const existing = await pool.query(
+      'SELECT * FROM purchases WHERE purchase_id = $1 AND is_deleted = false',
+      [id]
+    );
+    if (existing.rowCount === 0) {
+      return res.status(404).json({ error: 'Record not found or already deleted.' });
+    }
+
+    // Update with optional manual `updated_at` (if no trigger)
+    const result = await pool.query(
+      `UPDATE purchases 
+       SET product_code=$1, batch_id=$2, quantity=$3, cost_per_unit=$4, purchase_date=$5, updated_at=NOW()
+       WHERE purchase_id=$6 RETURNING *`,
+      [product_code, batch_id, quantity, cost_per_unit, purchase_date, id]
+    );
+
+    res.json(result.rows[0]);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-/* app.post('/api/sales', async (req, res) => {
-  const { product_code, sold_price, quantity, sale_date } = req.body;
+app.delete('/api/purchases/:id', async (req, res) => {
+  const { id } = req.params;
+
   try {
     const result = await pool.query(
-      'INSERT INTO sales (product_code, sold_price, quantity, sale_date) VALUES ($1, $2, $3, $4) RETURNING *',
-      [product_code, sold_price, quantity, sale_date]
+      `UPDATE purchases 
+       SET is_deleted = true, deleted_at = NOW() 
+       WHERE purchase_id = $1 AND is_deleted = false 
+       RETURNING *`,
+      [id]
     );
-    res.json(result.rows[0]);
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'Purchase already deleted or not found.' });
+    }
+
+    res.json({ message: 'Purchase deleted successfully.', record: result.rows[0] });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
-}); */
+});
+
+// 3. Sales (outs) API
+app.get('/api/sales', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM sales WHERE is_deleted = false');
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 app.post('/api/sales', async (req, res) => {
   const { product_code, sold_price, quantity, sale_date } = req.body;
@@ -193,6 +233,7 @@ app.get('/api/inventory-value', async (req, res) => {
   }
 });
 
+// 5. Export CSV function
 app.get("/api/export-csv", async (req, res) => {
   try {
     const { page } = req.query; // Get the page from the request
