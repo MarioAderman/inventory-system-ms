@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Sidebar from '../components/Sidebar';
 import OrderModal from '../components/OrderModal';
 import handleDownloadCSV from "../services/exportCSV";
 import { getSales } from '../services/api';
 import EditModal from '../components/EditModal';
+import DeleteModal from '../components/DeleteModal';
 
 function Sales() {
   const [sales, setSales] = useState([]);
@@ -11,7 +12,10 @@ function Sales() {
   const [loading, setLoading] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedSale, setSelectedSale] = useState(null);
+  const [selectedDelSale, setSelectedDelSale] = useState(null);
+  const [sortOrder, setSortOrder] = useState('desc');
 
   useEffect(() => {
     fetchSales();
@@ -29,23 +33,32 @@ function Sales() {
     }
   };
 
-  const filteredSales = sales.filter(sale => 
-    sale.product_code?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    sale.sale_id?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const handleSaleEdited = (editedFields) => {
-    const updatedSales = sales.map(sale =>
-      sale.id === selectedSale.id ? { ...sale, ...editedFields } : sale
+  const filteredSales = useMemo(() => {
+    const filtered = sales.filter(sale =>
+      sale.product_code?.toLowerCase().includes(searchTerm.toLowerCase())
     );
-    setSales(updatedSales);
-  };
-
-  const handleExport = () => handleDownloadCSV("sales");
+  
+    return filtered.sort((a, b) => {
+      const dateA = new Date(a.sale_date);
+      const dateB = new Date(b.sale_date);
+      return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
+    });
+  }, [sales, searchTerm, sortOrder]);
 
   const handleSaleAdded = () => {
     fetchSales();
   };
+
+  const handleSaleEdited = () => {
+    fetchSales();
+  };
+
+  const handleSaleDeleted = () => {
+    fetchSales();
+  };
+
+
+  const handleExport = () => handleDownloadCSV("sales");
 
   return (
     <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
@@ -64,21 +77,29 @@ function Sales() {
           { name: "sale_date", placeholder: "Sale Date", type: "date" },
         ]}
       />
-      {showEditModal && selectedSale && (
-        <EditModal 
-          isOpen={showEditModal} 
-          item={selectedSale} 
-          onClose={() => setShowEditModal(false)} 
-          onItemEdited={handleSaleEdited}
-          title="Edit Sale Order"
-          fields={[
-            { name: "product_code", placeholder: "Product Code" },
-            { name: "quantity", placeholder: "Quantity", type: "number", min: "1", step: "1"  },
-            { name: "sold_price", placeholder: "Sold Price", type: "number", min: "0", step: "5"  },
-            { name: "sale_date", placeholder: "Sale Date", type: "date" },
-          ]}
-        />
-      )}
+      <EditModal 
+        isOpen={showEditModal} 
+        item={selectedSale} 
+        onClose={() => setShowEditModal(false)} 
+        onItemEdited={handleSaleEdited}
+        title="Edit Sale Order"
+        successMessage="Sale Order updated successfully!"
+        type="sale"
+        fields={[
+          { name: "quantity", placeholder: "Quantity", type: "number", min: "1", step: "1" },
+          { name: "sold_price", placeholder: "Sold Price", type: "number", min: "0", step: "5" },
+          { name: "sale_date", placeholder: "Sale Date", type: "date" },
+        ]}
+      />
+      <DeleteModal
+        isOpen={showDeleteModal} 
+        item={selectedDelSale} 
+        onClose={() => setShowDeleteModal(false)} 
+        onItemEdited={handleSaleDeleted}
+        title="Delete Sale Order"
+        successMessage="Sale Order deleted successfully!"
+        type="sale"
+      />
       <div className="flex-1 p-8 overflow-auto">
         <h1 className="text-2xl font-bold mb-6 text-gray-800 dark:text-white">Sales</h1>
         
@@ -92,6 +113,28 @@ function Sales() {
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-300"
             />
+          </div>
+          <div className="mb-2 flex items-center space-x-4">
+            <label className="flex items-center space-x-2">
+              <input
+                type="radio"
+                value="asc"
+                checked={sortOrder === 'asc'}
+                onChange={() => setSortOrder('asc')}
+                className="form-radio h-4 w-4 text-blue-600"
+              />
+              <span className="text-gray-700 dark:text-gray-300">Oldest First</span>
+            </label>
+            <label className="flex items-center space-x-2">
+              <input
+                type="radio"
+                value="desc"
+                checked={sortOrder === 'desc'}
+                onChange={() => setSortOrder('desc')}
+                className="form-radio h-4 w-4 text-blue-600"
+              />
+              <span className="text-gray-700 dark:text-gray-300">Newest First</span>
+            </label>
           </div>
           <div>
             <button
@@ -167,19 +210,23 @@ function Sales() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <button 
-                          onClick={() => {
-                            setSelectedSale(sale);
-                            setShowEditModal(true);
-                          }}
-                          className="text-green-600 hover:text-green-900 mr-3"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          className="text-red-600 hover:text-red-900"
-                        >
-                          Delete
-                        </button>
+                        onClick={() => {
+                          setSelectedSale(sale);
+                          setShowEditModal(true);
+                        }}
+                        className="text-green-600 hover:text-green-900 mr-3"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => {
+                          setSelectedDelSale(sale);
+                          setShowDeleteModal(true);
+                        }}
+                        className="text-red-600 hover:text-red-900"
+                      >
+                        Delete
+                      </button>
                       </td>
                     </tr>
                   ))}

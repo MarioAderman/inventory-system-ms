@@ -103,7 +103,6 @@ function Purchases() {
         successMessage="Purchase Order updated successfully!"
         type="purchase"
         fields={[
-          { name: "product_code", placeholder: "Product Code" },
           { name: "batch_id", placeholder: "Batch ID" },
           { name: "quantity", placeholder: "Quantity", type: "number", min: "1", step: "1" },
           { name: "cost_per_unit", placeholder: "Cost Per Unit", type: "number", min: "0", step: "5" },

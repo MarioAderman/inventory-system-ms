@@ -296,6 +296,56 @@ app.post('/api/sales', async (req, res) => {
   }
 });
 
+app.put('/api/sales/:id', async (req, res) => {
+  const { id } = req.params;
+  const { product_code, quantity, sold_price, sale_date } = req.body;
+
+  try {
+    // Prevent editing soft-deleted records
+    const existing = await pool.query(
+      'SELECT * FROM sales WHERE sale_id = $1 AND is_deleted = false',
+      [id]
+    );
+    if (existing.rowCount === 0) {
+      return res.status(404).json({ error: 'Record not found or already deleted.' });
+    }
+
+    // Update with optional manual `updated_at` (if no trigger)
+    const result = await pool.query(
+      `UPDATE sales 
+       SET product_code=$1, quantity=$2, sold_price=$3, sale_date=$4, updated_at=NOW()
+       WHERE sale_id=$5 RETURNING *`,
+      [product_code, quantity, sold_price, sale_date, id]
+    );
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/api/sales/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const result = await pool.query(
+      `UPDATE sales 
+       SET is_deleted = true, deleted_at = NOW() 
+       WHERE sale_id = $1 AND is_deleted = false 
+       RETURNING *`,
+      [id]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'Sale already deleted or not found.' });
+    }
+
+    res.json({ message: 'Sale deleted successfully.', record: result.rows[0] });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // 4. Inventory Value (FIFO) API
 app.get('/api/inventory-value', async (req, res) => {
   try {

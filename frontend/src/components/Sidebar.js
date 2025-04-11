@@ -6,6 +6,12 @@ function Sidebar() {
   const currentPath = location.pathname;
   const [darkMode, setDarkMode] = React.useState(false);
 
+  // Add useEffect to sync state with actual dark mode status
+  React.useEffect(() => {
+    const isDark = document.documentElement.classList.contains('dark');
+    setDarkMode(isDark);
+  }, []);
+
   // Toggle theme function
   const toggleTheme = () => {
     setDarkMode(!darkMode);
