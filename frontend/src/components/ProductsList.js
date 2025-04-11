@@ -29,15 +29,17 @@ function ProductList() {
   };
 
   const filteredProducts = products.filter(product => {
-    const matchesSearchTerm = searchMode === 'description'
-      ? product.description?.toLowerCase().includes(searchTerm.toLowerCase())
-      : product.product_code?.toLowerCase().includes(searchTerm.toLowerCase());
-
-      const totalStock = product.batches.reduce((sum, batch) => sum + batch.quantity, 0);
+    const matchesSearchTerm = 
+      searchMode === 'description' ? 
+        product.description?.toLowerCase().includes(searchTerm.toLowerCase()) :
+      searchMode === 'code' ? 
+        product.product_code?.toLowerCase().includes(searchTerm.toLowerCase()) :
+        product.brand?.toLowerCase().includes(searchTerm.toLowerCase());
   
-      const meetsStockCondition = hideZeroStock ? totalStock > 0 : true;
+    const totalStock = product.batches.reduce((sum, batch) => sum + batch.quantity, 0);
+    const meetsStockCondition = hideZeroStock ? totalStock > 0 : true;
     
-      return matchesSearchTerm && meetsStockCondition;
+    return matchesSearchTerm && meetsStockCondition;
   });
   
   const handleExport = () => handleDownloadCSV("products");
@@ -118,7 +120,7 @@ function ProductList() {
             </button>
             <button
               onClick={() => setSearchMode('code')}
-              className={`w-32 px-4 py-2 rounded-r ${
+              className={`w-32 px-4 py-2 ${
                 searchMode === "code"
                   ? "bg-blue-600 text-white"
                   : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
@@ -126,11 +128,25 @@ function ProductList() {
             >
               Code
             </button>
+            <button
+              onClick={() => setSearchMode('brand')}
+              className={`w-32 px-4 py-2 rounded-r ${
+                searchMode === "brand"
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
+              }`}
+            >
+              Brand
+            </button>
           </div>
           <div className="w-64">
             <input 
               type="text" 
-              placeholder={`Search by ${searchMode}...`} 
+              placeholder={
+                searchMode === 'description' ? 'Search by description...' :
+                searchMode === 'code' ? 'Search by product code...' :
+                'Search by brand...'
+              } 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 leading-tight focus:outline-none focus:shadow-outline dark:text-gray-300"
