@@ -22,3 +22,6 @@ Thumbs.db
 # Backend-specific (if applicable)
 backend/node_modules/
 backend/.env
+
+# Dummy DB
+backup.sql
