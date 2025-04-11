@@ -160,9 +160,9 @@ function Sales() {
             {sales.length === 0 ? (
               <div className="p-4 text-center text-gray-500 dark:text-gray-400">No sales records found.</div>
             ) : (
-            <div className="max-h-[500px] overflow-y-auto">
-              <table className="min-w-full divide-y divide-gray-200 dark:bg-gray-800 shadow rounded overflow-hidden border-gray-600">
-                <thead className="bg-blue-500 sticky top-0 z-10 dark:bg-blue-800 sticky top-0 z-10">
+            <div className="max-h-[500px] overflow-y-auto" style={{ position: "relative" }}>
+              <table className="min-w-full dark:bg-gray-800 border-gray-600">
+                <thead className="bg-blue-500 dark:bg-blue-800 sticky top-0 z-10">
                   <tr>
                     <th className="px-6 py-3 text-left text-white text-sm font-medium uppercase tracking-wider">
                       Date
