@@ -21,6 +21,7 @@ export default function EditModal(props) {
   const handleFormSubmit = async (e) => {
     e.preventDefault();
     try {
+      // Check what type of element is tried to be deleted
       if (props.type === 'purchase') {
         if (!formData.purchase_id) {
           console.error("Missing purchase_id for update");
@@ -60,6 +61,7 @@ export default function EditModal(props) {
   };
 
   function handleClick() {
+    // Sends the parent a signal to close the modal
     props.onClose();
   }
 

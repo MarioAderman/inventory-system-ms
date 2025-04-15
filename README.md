@@ -1,6 +1,6 @@
 # 🧾 Inventory System
 
-A full-stack inventory management system built with:
+A full-stack inventory management system designed for efficient product and batch tracking, built with:
 
 - ⚛️ **Frontend:** React.js + Tailwind CSS
 - 🖥️ **Backend:** Express.js (Node.js)
@@ -15,7 +15,7 @@ A full-stack inventory management system built with:
     ├── backend/ # Express.js server 
     ├── frontend/ # React frontend  
     ├── schema_backup.sql # Database schema only 
-    └── README.md # You're here
+    └── README.md # Project Documentation
 ```
 
 ---
@@ -31,12 +31,25 @@ cd inventory_system
 
 ### 2. Database Setup
 
+> ***Make sure PostgreSQL is running, and update credentials as needed in the command below:***
+
 ```bash
 psql -U inventory_admin -d inventory_db -f schema_backup.sql
 ```
-*Adjust `inventory_admin` and `inventory_db` to match your setup.*
+> ***🔧 Replace inventory_admin and inventory_db with your actual PostgreSQL user and database names.***
 
 ### 3. Backend Setup
+
+Create a `.env` file in the `backend/` directory and populate it with your database configuration:
+
+ ```text
+DB_USER=inventory_admin
+DB_HOST=localhost # If run locally
+DB_NAME=inventory
+DB_PASSWORD='your_password'
+DB_PORT=****
+PORT=****
+```
 
 ```bash
 cd backend
@@ -56,17 +69,19 @@ npm run dev   # Or `npm start` depending on config
 
 ## 📦 Features
 
-- Product and batch tracking
+- 🔄 Product and batch tracking
 
-- Purchase and sales management
+- 📈 Purchase and sales management
 
-- FIFO stock logic
+- 📦 FIFO stock logic implementation
 
-- PostgreSQL-based backend with schema versioning
+- 🗃️ PostgreSQL schema versioning
 
-- CSV export support
+- 📤 CSV export support
 
-- Clean UI with Tailwind CSS
+- 🧼 Clean, responsive UI with Tailwind CSS
+
+- 🌙 Built-in Dark Mode 
 
 ---
 
@@ -78,4 +93,7 @@ npm run dev   # Or `npm start` depending on config
 |Backend   |Node.js, Express  |
 |Database  |PostgreSQL        |
 
+---
 
+🤝 Contributing
+Contributions are welcome! Feel free to fork this repo and open a pull request.

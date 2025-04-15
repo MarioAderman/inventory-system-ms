@@ -3,6 +3,7 @@ import Sidebar from '../components/Sidebar';
 import ProductsList from '../components/ProductsList';
 
 function Home() {
+  // Home page showing products list
   return (
     <div className="flex h-screen bg-gray-100:bg-gray-900">
       <Sidebar />

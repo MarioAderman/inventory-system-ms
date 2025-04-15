@@ -37,7 +37,8 @@ function Sales() {
     const filtered = sales.filter(sale =>
       sale.product_code?.toLowerCase().includes(searchTerm.toLowerCase())
     );
-  
+
+    // Sorting date logic for sale orders from newest to oldest and vice versa
     return filtered.sort((a, b) => {
       const dateA = new Date(a.sale_date);
       const dateB = new Date(b.sale_date);
@@ -63,6 +64,8 @@ function Sales() {
   return (
     <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
       <Sidebar />
+
+      {/* Modals */}
       <OrderModal 
         isOpen={isOpen} 
         onClose={() => setIsOpen(false)}
@@ -100,6 +103,7 @@ function Sales() {
         successMessage="Sale Order deleted successfully!"
         type="sale"
       />
+      
       <div className="flex-1 p-8 overflow-auto">
         <h1 className="text-2xl font-bold mb-6 text-gray-800 dark:text-white">Sales</h1>
         
@@ -145,7 +149,7 @@ function Sales() {
             <button 
             onClick={handleExport}
             className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700">
-              Export
+              Export CSV
             </button>
           </div>
         </div>

@@ -38,7 +38,8 @@ function Purchases() {
     const filtered = purchases.filter(purchase =>
       purchase.product_code?.toLowerCase().includes(searchTerm.toLowerCase())
     );
-  
+    
+    // Sorting date logic for purchase orders from newest to oldest and vice versa
     return filtered.sort((a, b) => {
       const dateA = new Date(a.purchase_date);
       const dateB = new Date(b.purchase_date);
@@ -58,6 +59,7 @@ function Purchases() {
     fetchPurchases();
   };  
 
+  // Batch ID format... BXXXX
   function batchIdConcat(batch_id) {
     let serialBatchId = '';
     if(batch_id <= 9){
@@ -79,7 +81,9 @@ function Purchases() {
   return (
     <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
       <Sidebar />
-      <OrderModal 
+      
+      {/* Modals */}
+      <OrderModal
         isOpen={isOpen} 
         onClose={() => setIsOpen(false)}
         onRecordAdded={handlePurchaseAdded}
@@ -118,6 +122,7 @@ function Purchases() {
         successMessage="Purchase Order deleted successfully!"
         type="purchase"
       />
+
       <div className="flex-1 p-8">
         <h1 className="text-2xl font-bold mb-6 text-gray-800 dark:text-white">Purchases</h1>
         
@@ -163,7 +168,7 @@ function Purchases() {
             <button 
             onClick={handleExport}
             className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700">
-              Export
+              Export CSV
             </button>
           </div>
         </div>

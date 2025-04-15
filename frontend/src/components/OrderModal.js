@@ -20,7 +20,7 @@ export default function OrderModal(props) {
     const handleFormSubmit = async (e) => {
         e.preventDefault();
         try {
-            
+            // Check what type of element is to be submitted
             if (props.type === "purchase") {
                 await addPurchase(formData);
             } else if (props.type === "sale") {
@@ -48,6 +48,7 @@ export default function OrderModal(props) {
     };
 
     function handleClick() {
+        // Sends the parent a signal to close the modal
         setFormData(initialFormState);
         props.onClose();
     }

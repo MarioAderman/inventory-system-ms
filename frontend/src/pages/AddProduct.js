@@ -4,6 +4,7 @@ import { addProduct } from '../services/api';
 
 function AddProduct() {
   
+  // Initialize the form
   const [formData, setFormData] = useState({
     product_code: '',
     brand: '',
@@ -25,6 +26,7 @@ function AddProduct() {
     };
 
   const handleToggle = () => {
+    // Toggle between dropdown menu and input
     setIsToggle(prevToggle => {
       const newToggle = !prevToggle;
       setFormData(prev => ({

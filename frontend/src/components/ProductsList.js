@@ -29,6 +29,7 @@ function ProductList() {
   };
 
   const filteredProducts = products.filter(product => {
+    // Checks which category is selected to look up into (Description, Code or Brand)
     const matchesSearchTerm = 
       searchMode === 'description' ? 
         product.description?.toLowerCase().includes(searchTerm.toLowerCase()) :
@@ -45,6 +46,7 @@ function ProductList() {
   const handleExport = () => handleDownloadCSV("products");
 
   const toggleExpand = (productCode) => {
+    // Expandable rows to show all batches linked to a product code
     setExpandedProducts(prev => 
       prev.includes(productCode)
         ? prev.filter(code => code !== productCode)
@@ -78,6 +80,8 @@ function ProductList() {
 
   return (
     <div>
+
+      {/* Modals */}
       <EditModal 
         isOpen={showEditModal} 
         item={selectedProduct} 
@@ -102,7 +106,8 @@ function ProductList() {
         successMessage="Product deleted successfully!"
         type="product"
       />
-      {/* Search and filters row */}
+      
+      {/* Search, filters row and Export CSV control */}
       <div className="mb-4 flex justify-between items-center">
         <div className="flex items-center space-x-4">
         <div className="flex items-center space-x-4">
@@ -214,6 +219,7 @@ function ProductList() {
                   ? product.batches.reduce((sum, batch) => sum + batch.quantity * batch.cost_per_unit, 0)
                   : 0;
                 return (
+
                   <React.Fragment key={product.product_code}>
                     {/* Main product row */}
                     <tr className="hover:bg-gray-50 dark:hover:bg-gray-600">
@@ -260,6 +266,7 @@ function ProductList() {
                         </button>
                       </td>
                     </tr>
+
                     {/* Nested batch rows (displayed if expanded) */}
                     {isExpanded && product.batches && product.batches.map((batch) => (
                       <tr key={batch.batch_id} className="bg-gray-100 dark:bg-gray-700">
@@ -280,9 +287,12 @@ function ProductList() {
                         </td>
                       </tr>
                     ))}
+
                   </React.Fragment>
+
                 );
               })}
+              
             </tbody>
           </table>
         </div>

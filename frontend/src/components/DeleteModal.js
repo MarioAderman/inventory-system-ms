@@ -12,12 +12,13 @@ export default function DeleteModal(props) {
         e.preventDefault();
         
         try {
+            // Check what type of element is tried to be deleted
             if (props.type === 'purchase') { 
                 if (!props.item) {
                     console.error("Missing purchase_id for delete");
                 return;
                 }
-                await deletePurchase(props.item.purchase_id); // assumes `id` is part of formData
+                await deletePurchase(props.item.purchase_id);
             } else if (props.type === 'sale') {
                 if (!props.item) {
                     console.error("Missing sale_id for delete");
@@ -50,6 +51,7 @@ export default function DeleteModal(props) {
     };
 
     function handleCancel() {
+        // Sends the parent a signal to close the modal
         props.onClose();
     }
 
