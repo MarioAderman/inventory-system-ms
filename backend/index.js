@@ -31,6 +31,7 @@ app.get('/ping', (req, res) => {
 
 // 1. Products API
 app.get('/api/products', async (req, res) => {
+  console.log('Hitting /api/products');
   try {
     const result = await pool.query(`
       SELECT
