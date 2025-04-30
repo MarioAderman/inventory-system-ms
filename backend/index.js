@@ -33,6 +33,7 @@ app.get('/ping', (req, res) => {
 app.get('/api/products', async (req, res) => {
   console.log('Hitting /api/products');
   try {
+    await pool.query('SET search_path TO inventory_schema');
     const result = await pool.query(`
       SELECT
         p.product_id, 
