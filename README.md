@@ -8,6 +8,15 @@ A full-stack inventory management system designed for efficient product and batc
 
 ---
 
+## 🔗 Demo & Preview
+
+- 🌐 **Live Demo:** [inventory-system.vercel.app](https://inventory-system-rust-three.vercel.app/)  
+- 🖼️ **Preview Screenshot:**
+
+  ![Inventory System Screenshot](./assets/screenshot.png)
+
+---
+
 ## 📁 Project Structure
 
 ```text
