@@ -24,6 +24,11 @@ pool.query('SELECT NOW()', (err, res) => {
 
 // API Endpoints
 
+// Test
+app.get('/ping', (req, res) => {
+  res.send('pong');
+});
+
 // 1. Products API
 app.get('/api/products', async (req, res) => {
   try {
