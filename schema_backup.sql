@@ -21,16 +21,16 @@ SET row_security = off;
 -- Name: inventory_schema; Type: SCHEMA; Schema: -; Owner: inventory_admin
 --
 
-CREATE SCHEMA inventory_schema;
+CREATE SCHEMA inventory_ms_schema;
 
 
-ALTER SCHEMA inventory_schema OWNER TO inventory_admin;
+ALTER SCHEMA inventory_ms_schema OWNER TO inventory_admin;
 
 --
 -- Name: set_updated_at(); Type: FUNCTION; Schema: inventory_schema; Owner: inventory_admin
 --
 
-CREATE FUNCTION inventory_schema.set_updated_at() RETURNS trigger
+CREATE FUNCTION inventory_ms_schema.set_updated_at() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
 BEGIN
@@ -40,17 +40,17 @@ END;
 $$;
 
 
-ALTER FUNCTION inventory_schema.set_updated_at() OWNER TO inventory_admin;
+ALTER FUNCTION inventory_ms_schema.set_updated_at() OWNER TO inventory_admin;
 
 --
 -- Name: sync_product_code(); Type: FUNCTION; Schema: inventory_schema; Owner: inventory_admin
 --
 
-CREATE FUNCTION inventory_schema.sync_product_code() RETURNS trigger
+CREATE FUNCTION inventory_ms_schema.sync_product_code() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
 BEGIN
-  UPDATE inventory_schema.purchases
+  UPDATE inventory_ms_schema.purchases
   SET product_code = NEW.product_code
   WHERE product_id = NEW.product_id;
 
@@ -63,7 +63,7 @@ END;
 $$;
 
 
-ALTER FUNCTION inventory_schema.sync_product_code() OWNER TO inventory_admin;
+ALTER FUNCTION inventory_ms_schema.sync_product_code() OWNER TO inventory_admin;
 
 SET default_tablespace = '';
 
@@ -73,10 +73,11 @@ SET default_table_access_method = heap;
 -- Name: products; Type: TABLE; Schema: inventory_schema; Owner: inventory_admin
 --
 
-CREATE TABLE inventory_schema.products (
+CREATE TABLE inventory_ms_schema.products (
     product_id integer NOT NULL,
     product_code character varying(20) NOT NULL,
     description text,
+    size text,
     current_price integer,
     brand character varying(50),
     is_deleted boolean DEFAULT false,
@@ -86,13 +87,13 @@ CREATE TABLE inventory_schema.products (
 );
 
 
-ALTER TABLE inventory_schema.products OWNER TO inventory_admin;
+ALTER TABLE inventory_ms_schema.products OWNER TO inventory_admin;
 
 --
 -- Name: products_product_id_seq; Type: SEQUENCE; Schema: inventory_schema; Owner: inventory_admin
 --
 
-CREATE SEQUENCE inventory_schema.products_product_id_seq
+CREATE SEQUENCE inventory_ms_schema.products_product_id_seq
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -101,20 +102,20 @@ CREATE SEQUENCE inventory_schema.products_product_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE inventory_schema.products_product_id_seq OWNER TO inventory_admin;
+ALTER SEQUENCE inventory_ms_schema.products_product_id_seq OWNER TO inventory_admin;
 
 --
 -- Name: products_product_id_seq; Type: SEQUENCE OWNED BY; Schema: inventory_schema; Owner: inventory_admin
 --
 
-ALTER SEQUENCE inventory_schema.products_product_id_seq OWNED BY inventory_schema.products.product_id;
+ALTER SEQUENCE inventory_ms_schema.products_product_id_seq OWNED BY inventory_ms_schema.products.product_id;
 
 
 --
 -- Name: purchases; Type: TABLE; Schema: inventory_schema; Owner: inventory_admin
 --
 
-CREATE TABLE inventory_schema.purchases (
+CREATE TABLE inventory_ms_schema.purchases (
     purchase_id integer NOT NULL,
     product_id integer NOT NULL,
     product_code character varying(20) NOT NULL,
@@ -130,13 +131,13 @@ CREATE TABLE inventory_schema.purchases (
 );
 
 
-ALTER TABLE inventory_schema.purchases OWNER TO inventory_admin;
+ALTER TABLE inventory_ms_schema.purchases OWNER TO inventory_admin;
 
 --
 -- Name: purchases_purchase_id_seq; Type: SEQUENCE; Schema: inventory_schema; Owner: inventory_admin
 --
 
-CREATE SEQUENCE inventory_schema.purchases_purchase_id_seq
+CREATE SEQUENCE inventory_ms_schema.purchases_purchase_id_seq
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -145,20 +146,20 @@ CREATE SEQUENCE inventory_schema.purchases_purchase_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE inventory_schema.purchases_purchase_id_seq OWNER TO inventory_admin;
+ALTER SEQUENCE inventory_ms_schema.purchases_purchase_id_seq OWNER TO inventory_admin;
 
 --
 -- Name: purchases_purchase_id_seq; Type: SEQUENCE OWNED BY; Schema: inventory_schema; Owner: inventory_admin
 --
 
-ALTER SEQUENCE inventory_schema.purchases_purchase_id_seq OWNED BY inventory_schema.purchases.purchase_id;
+ALTER SEQUENCE inventory_ms_schema.purchases_purchase_id_seq OWNED BY inventory_ms_schema.purchases.purchase_id;
 
 
 --
 -- Name: sales; Type: TABLE; Schema: inventory_schema; Owner: inventory_admin
 --
 
-CREATE TABLE inventory_schema.sales (
+CREATE TABLE inventory_ms_schema.sales (
     sale_id integer NOT NULL,
     product_id integer NOT NULL,
     product_code character varying(20) NOT NULL,
@@ -172,13 +173,13 @@ CREATE TABLE inventory_schema.sales (
 );
 
 
-ALTER TABLE inventory_schema.sales OWNER TO inventory_admin;
+ALTER TABLE inventory_ms_schema.sales OWNER TO inventory_admin;
 
 --
 -- Name: sales_sale_id_seq1; Type: SEQUENCE; Schema: inventory_schema; Owner: inventory_admin
 --
 
-CREATE SEQUENCE inventory_schema.sales_sale_id_seq1
+CREATE SEQUENCE inventory_ms_schema.sales_sale_id_seq1
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -187,41 +188,41 @@ CREATE SEQUENCE inventory_schema.sales_sale_id_seq1
     CACHE 1;
 
 
-ALTER SEQUENCE inventory_schema.sales_sale_id_seq1 OWNER TO inventory_admin;
+ALTER SEQUENCE inventory_ms_schema.sales_sale_id_seq1 OWNER TO inventory_admin;
 
 --
 -- Name: sales_sale_id_seq1; Type: SEQUENCE OWNED BY; Schema: inventory_schema; Owner: inventory_admin
 --
 
-ALTER SEQUENCE inventory_schema.sales_sale_id_seq1 OWNED BY inventory_schema.sales.sale_id;
+ALTER SEQUENCE inventory_ms_schema.sales_sale_id_seq1 OWNED BY inventory_ms_schema.sales.sale_id;
 
 
 --
 -- Name: products product_id; Type: DEFAULT; Schema: inventory_schema; Owner: inventory_admin
 --
 
-ALTER TABLE ONLY inventory_schema.products ALTER COLUMN product_id SET DEFAULT nextval('inventory_schema.products_product_id_seq'::regclass);
+ALTER TABLE ONLY inventory_ms_schema.products ALTER COLUMN product_id SET DEFAULT nextval('inventory_ms_schema.products_product_id_seq'::regclass);
 
 
 --
 -- Name: purchases purchase_id; Type: DEFAULT; Schema: inventory_schema; Owner: inventory_admin
 --
 
-ALTER TABLE ONLY inventory_schema.purchases ALTER COLUMN purchase_id SET DEFAULT nextval('inventory_schema.purchases_purchase_id_seq'::regclass);
+ALTER TABLE ONLY inventory_ms_schema.purchases ALTER COLUMN purchase_id SET DEFAULT nextval('inventory_ms_schema.purchases_purchase_id_seq'::regclass);
 
 
 --
 -- Name: sales sale_id; Type: DEFAULT; Schema: inventory_schema; Owner: inventory_admin
 --
 
-ALTER TABLE ONLY inventory_schema.sales ALTER COLUMN sale_id SET DEFAULT nextval('inventory_schema.sales_sale_id_seq1'::regclass);
+ALTER TABLE ONLY inventory_ms_schema.sales ALTER COLUMN sale_id SET DEFAULT nextval('inventory_ms_schema.sales_sale_id_seq1'::regclass);
 
 
 --
 -- Name: products products_pkey; Type: CONSTRAINT; Schema: inventory_schema; Owner: inventory_admin
 --
 
-ALTER TABLE ONLY inventory_schema.products
+ALTER TABLE ONLY inventory_ms_schema.products
     ADD CONSTRAINT products_pkey PRIMARY KEY (product_id);
 
 
@@ -229,7 +230,7 @@ ALTER TABLE ONLY inventory_schema.products
 -- Name: purchases purchases_pkey; Type: CONSTRAINT; Schema: inventory_schema; Owner: inventory_admin
 --
 
-ALTER TABLE ONLY inventory_schema.purchases
+ALTER TABLE ONLY inventory_ms_schema.purchases
     ADD CONSTRAINT purchases_pkey PRIMARY KEY (purchase_id);
 
 
@@ -237,7 +238,7 @@ ALTER TABLE ONLY inventory_schema.purchases
 -- Name: sales sales_pkey1; Type: CONSTRAINT; Schema: inventory_schema; Owner: inventory_admin
 --
 
-ALTER TABLE ONLY inventory_schema.sales
+ALTER TABLE ONLY inventory_ms_schema.sales
     ADD CONSTRAINT sales_pkey1 PRIMARY KEY (sale_id);
 
 
@@ -245,7 +246,7 @@ ALTER TABLE ONLY inventory_schema.sales
 -- Name: purchases unique_product_batch; Type: CONSTRAINT; Schema: inventory_schema; Owner: inventory_admin
 --
 
-ALTER TABLE ONLY inventory_schema.purchases
+ALTER TABLE ONLY inventory_ms_schema.purchases
     ADD CONSTRAINT unique_product_batch UNIQUE (product_code, batch_id);
 
 
@@ -253,7 +254,7 @@ ALTER TABLE ONLY inventory_schema.purchases
 -- Name: products unique_product_code; Type: CONSTRAINT; Schema: inventory_schema; Owner: inventory_admin
 --
 
-ALTER TABLE ONLY inventory_schema.products
+ALTER TABLE ONLY inventory_ms_schema.products
     ADD CONSTRAINT unique_product_code UNIQUE (product_code);
 
 
@@ -261,44 +262,44 @@ ALTER TABLE ONLY inventory_schema.products
 -- Name: products set_products_updated_at; Type: TRIGGER; Schema: inventory_schema; Owner: inventory_admin
 --
 
-CREATE TRIGGER set_products_updated_at BEFORE UPDATE ON inventory_schema.products FOR EACH ROW EXECUTE FUNCTION inventory_schema.set_updated_at();
+CREATE TRIGGER set_products_updated_at BEFORE UPDATE ON inventory_ms_schema.products FOR EACH ROW EXECUTE FUNCTION inventory_ms_schema.set_updated_at();
 
 
 --
 -- Name: purchases set_purchases_updated_at; Type: TRIGGER; Schema: inventory_schema; Owner: inventory_admin
 --
 
-CREATE TRIGGER set_purchases_updated_at BEFORE UPDATE ON inventory_schema.purchases FOR EACH ROW EXECUTE FUNCTION inventory_schema.set_updated_at();
+CREATE TRIGGER set_purchases_updated_at BEFORE UPDATE ON inventory_ms_schema.purchases FOR EACH ROW EXECUTE FUNCTION inventory_ms_schema.set_updated_at();
 
 
 --
 -- Name: sales set_sales_updated_at; Type: TRIGGER; Schema: inventory_schema; Owner: inventory_admin
 --
 
-CREATE TRIGGER set_sales_updated_at BEFORE UPDATE ON inventory_schema.sales FOR EACH ROW EXECUTE FUNCTION inventory_schema.set_updated_at();
+CREATE TRIGGER set_sales_updated_at BEFORE UPDATE ON inventory_ms_schema.sales FOR EACH ROW EXECUTE FUNCTION inventory_ms_schema.set_updated_at();
 
 
 --
 -- Name: products trigger_sync_product_code; Type: TRIGGER; Schema: inventory_schema; Owner: inventory_admin
 --
 
-CREATE TRIGGER trigger_sync_product_code AFTER UPDATE OF product_code ON inventory_schema.products FOR EACH ROW EXECUTE FUNCTION inventory_schema.sync_product_code();
+CREATE TRIGGER trigger_sync_product_code AFTER UPDATE OF product_code ON inventory_ms_schema.products FOR EACH ROW EXECUTE FUNCTION inventory_ms_schema.sync_product_code();
 
 
 --
 -- Name: purchases purchases_product_id_fkey; Type: FK CONSTRAINT; Schema: inventory_schema; Owner: inventory_admin
 --
 
-ALTER TABLE ONLY inventory_schema.purchases
-    ADD CONSTRAINT purchases_product_id_fkey FOREIGN KEY (product_id) REFERENCES inventory_schema.products(product_id);
+ALTER TABLE ONLY inventory_ms_schema.purchases
+    ADD CONSTRAINT purchases_product_id_fkey FOREIGN KEY (product_id) REFERENCES inventory_ms_schema.products(product_id);
 
 
 --
 -- Name: sales sales_product_id_fkey; Type: FK CONSTRAINT; Schema: inventory_schema; Owner: inventory_admin
 --
 
-ALTER TABLE ONLY inventory_schema.sales
-    ADD CONSTRAINT sales_product_id_fkey FOREIGN KEY (product_id) REFERENCES inventory_schema.products(product_id);
+ALTER TABLE ONLY inventory_ms_schema.sales
+    ADD CONSTRAINT sales_product_id_fkey FOREIGN KEY (product_id) REFERENCES inventory_ms_schema.products(product_id);
 
 
 --

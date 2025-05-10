@@ -20,5 +20,13 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": ""
+  "description": "A full-stack inventory management system designed for efficient product and batch tracking, built with:",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MarioAderman/inventory-system-ms.git"
+  },
+  "bugs": {
+    "url": "https://github.com/MarioAderman/inventory-system-ms/issues"
+  },
+  "homepage": "https://github.com/MarioAderman/inventory-system-ms#readme"
 }
