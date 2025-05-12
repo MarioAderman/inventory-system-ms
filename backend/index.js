@@ -37,14 +37,14 @@ app.get('/ping', (req, res) => {
 
 // 1. Products API
 app.get('/api/products', async (req, res) => {
-  console.log('Hitting /api/products');
   try {
     await pool.query('SET search_path TO inventory_ms_schema');
     const result = await pool.query(`
       SELECT
         p.product_id, 
         p.product_code, 
-        p.description, 
+        p.description,
+        p.size,
         p.current_price,
         p.brand,
         json_agg(
@@ -71,11 +71,11 @@ app.get('/api/products', async (req, res) => {
 });
 
 app.post('/api/products', async (req, res) => {
-  const { product_code, description, current_price, brand } = req.body;
+  const { product_code, description, current_price, brand, size } = req.body;
   try {
     const result = await pool.query(
-      'INSERT INTO products (product_code, description, current_price, brand) VALUES ($1, $2, $3, $4) RETURNING *',
-      [product_code, description, current_price, brand]
+      'INSERT INTO products (product_code, description, size, current_price, brand) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+      [product_code, description, size, current_price, brand]
     );
     res.json(result.rows[0]);
   } catch (err) {
@@ -85,7 +85,7 @@ app.post('/api/products', async (req, res) => {
 
 app.put('/api/products/:product_id', async (req, res) => {
   const { product_id } = req.params;
-  const { product_code, brand, description, current_price } = req.body;
+  const { product_code, brand, description, size, current_price } = req.body;
 
   try {
     // Prevent editing soft-deleted records
@@ -100,10 +100,10 @@ app.put('/api/products/:product_id', async (req, res) => {
     // Update with optional manual `updated_at` (if no trigger)
     const result = await pool.query(
       `UPDATE products 
-       SET product_code=$1, brand=$2, description=$3, current_price=$4, updated_at=NOW()
-       WHERE product_id=$5 
+       SET product_code=$1, brand=$2, description=$3, size=$4, current_price=$5, updated_at=NOW()
+       WHERE product_id=$6 
        RETURNING *`,
-      [product_code, brand, description, current_price, product_id]
+      [product_code, brand, description, size, current_price, product_id]
     );
 
     res.json(result.rows[0]);

@@ -9,12 +9,14 @@ function AddProduct() {
     product_code: '',
     brand: '',
     description: '',
+    size: '',
     current_price: ''
   });
 
   const [message, setMessage] = useState({ text: '', type: '' });
   const [isToggle, setIsToggle] = useState(false);
-  const brandOptions = ["HotWheels", "MiniGT", "Auto World", "Greenlight", "Johnny Lightning", "Tarmac", "Inno"]
+  const brandOptions = ["Gala Sports"]
+  const sizeOptions = ["XS", "S", "M", "L", "XL"];
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -49,7 +51,7 @@ function AddProduct() {
       
       await addProduct(productData);
       setMessage({ text: 'Product added successfully!', type: 'success' });
-      setFormData({ product_code: '', brand: '', description: '', current_price: '' });
+      setFormData({ product_code: '', brand: '', description: '', size: '', current_price: '' });
     } catch (err) {
       console.error(err);
       setMessage({ text: 'Error adding product.', type: 'error' });
@@ -150,6 +152,34 @@ function AddProduct() {
               />
             </div>
             
+            <div className="mb-4">
+              <label className="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" htmlFor="brand">
+                Size
+              </label>
+            <div className="relative">
+                  <select
+                    name="size"
+                    id="size"
+                    value={formData.size}
+                    onChange={handleChange}
+                    required
+                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 dark:text-gray-300 dark:bg-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  >
+                    <option value="" disabled selected>--- Select an option ---</option>
+                    {sizeOptions.map((option, index) => 
+                      <option key={index} value={option}>
+                        {option}
+                      </option>)
+                    }
+                  </select>
+                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700 dark:text-gray-300">
+                    <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                      <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            
             <div className="mb-6">
               <label className="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" htmlFor="current_price">
                 Current Price ($)
@@ -157,7 +187,7 @@ function AddProduct() {
               <input
                 id="current_price"
                 type="number"
-                step="1"
+                step="0.5"
                 min="0"
                 name="current_price"
                 value={formData.current_price}
@@ -176,7 +206,7 @@ function AddProduct() {
               </button>
               <button
                 type="button"
-                onClick={() => setFormData({ product_code: '', brand: '', description: '', current_price: '' })}
+                onClick={() => setFormData({ product_code: '', brand: '', description: '', size: '', current_price: '' })}
                 className="bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500 text-gray-800 dark:text-gray-200 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
               >
                 Clear Form

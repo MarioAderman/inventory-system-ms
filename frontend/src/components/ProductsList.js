@@ -94,7 +94,8 @@ function ProductList() {
           { name: "product_code", placeholder: "Product Code" },
           { name: "brand", placeholder: "Brand" },
           { name: "description", placeholder: "Description"},
-          { name: "current_price", placeholder: "Current Price", type: "number", min: "0", step: "5" },
+          { name: "size", placeholder: "Size"},
+          { name: "current_price", placeholder: "Current Price", type: "number", min: "0", step: "0.1" },
         ]}
       />
       <DeleteModal
@@ -193,6 +194,9 @@ function ProductList() {
                   Description
                 </th>
                 <th className="w-[120px] px-6 py-3 text-left text-white text-sm font-medium uppercase tracking-wider">
+                  Size
+                </th>
+                <th className="w-[120px] px-6 py-3 text-left text-white text-sm font-medium uppercase tracking-wider">
                   Stock
                 </th>
                 <th className="w-[140px] px-6 py-3 text-left text-white text-sm font-medium uppercase tracking-wider">
@@ -231,6 +235,9 @@ function ProductList() {
                       </td>
                       <td className="w-[500px] px-6 py-4 whitespace-nowrap dark:text-gray-300">
                         {product.description}
+                      </td>
+                      <td className="w-[100px] px-6 py-4 whitespace-nowrap dark:text-gray-300">
+                        {product.size}
                       </td>
                       <td className="w-[100px] px-6 py-4 whitespace-nowrap dark:text-gray-300 font-bold" colSpan="2">
                         {totalStock}
