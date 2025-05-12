@@ -17,6 +17,9 @@ const pool = new Pool({
   database: process.env.DB_NAME,
   password: process.env.DB_PASSWORD,
   port: process.env.DB_PORT,
+  ssl: {
+    rejectUnauthorized: false
+  }
 });
 
 // Test connection
@@ -36,7 +39,7 @@ app.get('/ping', (req, res) => {
 app.get('/api/products', async (req, res) => {
   console.log('Hitting /api/products');
   try {
-    await pool.query('SET search_path TO inventory_schema');
+    await pool.query('SET search_path TO inventory_ms_schema');
     const result = await pool.query(`
       SELECT
         p.product_id, 

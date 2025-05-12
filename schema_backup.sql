@@ -24,7 +24,7 @@ SET row_security = off;
 CREATE SCHEMA inventory_ms_schema;
 
 
-ALTER SCHEMA inventory_ms_schema OWNER TO inventory_admin;
+-- ALTER SCHEMA inventory_ms_schema OWNER TO inventory_admin;
 
 --
 -- Name: set_updated_at(); Type: FUNCTION; Schema: inventory_schema; Owner: inventory_admin
@@ -40,7 +40,7 @@ END;
 $$;
 
 
-ALTER FUNCTION inventory_ms_schema.set_updated_at() OWNER TO inventory_admin;
+-- ALTER FUNCTION inventory_ms_schema.set_updated_at() OWNER TO inventory_admin;
 
 --
 -- Name: sync_product_code(); Type: FUNCTION; Schema: inventory_schema; Owner: inventory_admin
@@ -63,7 +63,7 @@ END;
 $$;
 
 
-ALTER FUNCTION inventory_ms_schema.sync_product_code() OWNER TO inventory_admin;
+-- ALTER FUNCTION inventory_ms_schema.sync_product_code() OWNER TO inventory_admin;
 
 SET default_tablespace = '';
 
@@ -87,7 +87,7 @@ CREATE TABLE inventory_ms_schema.products (
 );
 
 
-ALTER TABLE inventory_ms_schema.products OWNER TO inventory_admin;
+-- ALTER TABLE inventory_ms_schema.products OWNER TO inventory_admin;
 
 --
 -- Name: products_product_id_seq; Type: SEQUENCE; Schema: inventory_schema; Owner: inventory_admin
@@ -102,7 +102,7 @@ CREATE SEQUENCE inventory_ms_schema.products_product_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE inventory_ms_schema.products_product_id_seq OWNER TO inventory_admin;
+-- ALTER SEQUENCE inventory_ms_schema.products_product_id_seq OWNER TO inventory_admin;
 
 --
 -- Name: products_product_id_seq; Type: SEQUENCE OWNED BY; Schema: inventory_schema; Owner: inventory_admin
@@ -131,7 +131,7 @@ CREATE TABLE inventory_ms_schema.purchases (
 );
 
 
-ALTER TABLE inventory_ms_schema.purchases OWNER TO inventory_admin;
+-- ALTER TABLE inventory_ms_schema.purchases OWNER TO inventory_admin;
 
 --
 -- Name: purchases_purchase_id_seq; Type: SEQUENCE; Schema: inventory_schema; Owner: inventory_admin
@@ -146,7 +146,7 @@ CREATE SEQUENCE inventory_ms_schema.purchases_purchase_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE inventory_ms_schema.purchases_purchase_id_seq OWNER TO inventory_admin;
+-- ALTER SEQUENCE inventory_ms_schema.purchases_purchase_id_seq OWNER TO inventory_admin;
 
 --
 -- Name: purchases_purchase_id_seq; Type: SEQUENCE OWNED BY; Schema: inventory_schema; Owner: inventory_admin
@@ -173,7 +173,7 @@ CREATE TABLE inventory_ms_schema.sales (
 );
 
 
-ALTER TABLE inventory_ms_schema.sales OWNER TO inventory_admin;
+-- ALTER TABLE inventory_ms_schema.sales OWNER TO inventory_admin;
 
 --
 -- Name: sales_sale_id_seq1; Type: SEQUENCE; Schema: inventory_schema; Owner: inventory_admin
@@ -188,7 +188,7 @@ CREATE SEQUENCE inventory_ms_schema.sales_sale_id_seq1
     CACHE 1;
 
 
-ALTER SEQUENCE inventory_ms_schema.sales_sale_id_seq1 OWNER TO inventory_admin;
+-- ALTER SEQUENCE inventory_ms_schema.sales_sale_id_seq1 OWNER TO inventory_admin;
 
 --
 -- Name: sales_sale_id_seq1; Type: SEQUENCE OWNED BY; Schema: inventory_schema; Owner: inventory_admin
@@ -306,21 +306,21 @@ ALTER TABLE ONLY inventory_ms_schema.sales
 -- Name: SCHEMA public; Type: ACL; Schema: -; Owner: pg_database_owner
 --
 
-GRANT ALL ON SCHEMA public TO inventory_admin;
+-- GRANT ALL ON SCHEMA public TO inventory_admin;
 
 
 --
 -- Name: DEFAULT PRIVILEGES FOR SEQUENCES; Type: DEFAULT ACL; Schema: public; Owner: postgres
 --
 
-ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON SEQUENCES TO inventory_admin;
+-- ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON SEQUENCES TO inventory_admin;
 
 
 --
 -- Name: DEFAULT PRIVILEGES FOR TABLES; Type: DEFAULT ACL; Schema: public; Owner: postgres
 --
 
-ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON TABLES TO inventory_admin;
+-- ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON TABLES TO inventory_admin;
 
 
 --
