@@ -15,8 +15,8 @@ function AddProduct() {
 
   const [message, setMessage] = useState({ text: '', type: '' });
   const [isToggle, setIsToggle] = useState(false);
-  const brandOptions = ["Gala Sports"]
-  const sizeOptions = ["XS", "S", "M", "L", "XL"];
+  const brandOptions = ["Gala Sports"];
+  const sizeOptions = ["XS", "S", "M", "L", "XL", "SM", "LXL"];
 
   const handleChange = (e) => {
     const { name, value } = e.target;
