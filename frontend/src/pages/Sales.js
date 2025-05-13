@@ -76,7 +76,7 @@ function Sales() {
         fields={[
           { name: "product_code", placeholder: "Product Code" },
           { name: "quantity", placeholder: "Quantity", type: "number", min: "1", step: "1"  },
-          { name: "sold_price", placeholder: "Sold Price", type: "number", min: "0", step: "5"  },
+          { name: "sold_price", placeholder: "Sold Price", type: "number", min: "0", step: "0.1"  },
           { name: "sale_date", placeholder: "Sale Date", type: "date" },
         ]}
       />
@@ -90,7 +90,7 @@ function Sales() {
         type="sale"
         fields={[
           { name: "quantity", placeholder: "Quantity", type: "number", min: "1", step: "1" },
-          { name: "sold_price", placeholder: "Sold Price", type: "number", min: "0", step: "5" },
+          { name: "sold_price", placeholder: "Sold Price", type: "number", min: "0", step: "0.1" },
           { name: "sale_date", placeholder: "Sale Date", type: "date" },
         ]}
       />

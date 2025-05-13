@@ -94,7 +94,7 @@ function Purchases() {
           { name: "product_code", placeholder: "Product Code" },
           { name: "batch_id", placeholder: "Batch ID" },
           { name: "quantity", placeholder: "Quantity", type: "number", min: "1", step: "1" },
-          { name: "cost_per_unit", placeholder: "Cost Per Unit", type: "number", min: "0", step: "5" },
+          { name: "cost_per_unit", placeholder: "Cost Per Unit", type: "number", min: "0", step: "0.1" },
           { name: "purchase_date", placeholder: "Purchase Date", type: "date" },
         ]}
       />
@@ -109,7 +109,7 @@ function Purchases() {
         fields={[
           { name: "batch_id", placeholder: "Batch ID" },
           { name: "quantity", placeholder: "Quantity", type: "number", min: "1", step: "1" },
-          { name: "cost_per_unit", placeholder: "Cost Per Unit", type: "number", min: "0", step: "5" },
+          { name: "cost_per_unit", placeholder: "Cost Per Unit", type: "number", min: "0", step: "0.1" },
           { name: "purchase_date", placeholder: "Purchase Date", type: "date" },
         ]}
       />
