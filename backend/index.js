@@ -223,15 +223,46 @@ app.delete('/api/purchases/:id', async (req, res) => {
 // 3. Sales (outs) API
 app.get('/api/sales', async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM sales WHERE is_deleted = false');
+    await pool.query('SET search_path TO inventory_schema'); // Ensure correct schema
+    const query = `
+      SELECT
+        s.sale_id,
+        s.product_id,
+        s.product_code,
+        s.quantity AS total_quantity_sold,
+        s.sold_price,
+        s.sale_date,
+        s.created_at AS sale_created_at,
+        (
+          SELECT COALESCE(json_agg(
+            json_build_object(
+              'sales_detail_id', sd.sales_detail_id,
+              'purchase_id', sd.purchase_id,
+              'batch_id', p.batch_id,
+              'quantity_from_batch', sd.quantity,
+              'cost_per_unit', sd.unit_cost,
+              'total_batch_cost', sd.total_cost,
+              'purchase_date', p.purchase_date
+            ) ORDER BY p.purchase_date ASC, p.batch_id ASC
+          ), '[]'::json)
+          FROM sales_details sd
+          JOIN purchases p ON sd.purchase_id = p.purchase_id
+          WHERE sd.sale_id = s.sale_id
+        ) AS affected_batches
+      FROM sales s
+      WHERE s.is_deleted = false
+      ORDER BY s.sale_date DESC, s.sale_id DESC;
+    `;
+    const result = await pool.query(query);
     res.json(result.rows);
   } catch (err) {
+    console.error("Error fetching sales with details:", err);
     res.status(500).json({ error: err.message });
   }
 });
 
 app.post('/api/sales', async (req, res) => {
-  const { product_code, sold_price, quantity, sale_date } = req.body;
+  const { product_code, sold_price, quantity: totalSaleQuantity, sale_date } = req.body; // Renamed quantity to totalSaleQuantity for clarity
   const client = await pool.connect();
 
   try {
@@ -247,60 +278,86 @@ app.post('/api/sales', async (req, res) => {
     }
     const product_id = productResult.rows[0].product_id;
 
-    // STEP 1: Check available stock for the product (sum of all batch quantities)
+    // STEP 1: Initial overall stock check for the product (sum of all non-deleted batch quantities)
     const stockQuery = `
       SELECT COALESCE(SUM(quantity), 0) AS total_stock 
       FROM purchases 
-      WHERE product_code = $1 AND quantity > 0
+      WHERE product_id = $1 AND quantity > 0 AND is_deleted = false
     `;
-    const { rows: stockRows } = await client.query(stockQuery, [product_code]);
+    const { rows: stockRows } = await client.query(stockQuery, [product_id]);
     const totalStock = parseInt(stockRows[0].total_stock, 10);
 
-    if (totalStock < quantity) {
+    if (totalStock < totalSaleQuantity) {
       await client.query('ROLLBACK');
-      return res.status(400).json({ error: "Not enough stock available" });
+      return res.status(400).json({ error: `Not enough stock available for ${product_code}. Available: ${totalStock}, Requested: ${totalSaleQuantity}` });
     }
 
     // STEP 2: Insert the sale into the sales table.
     const saleInsertQuery = `
-      INSERT INTO sales (product_code, product_id, sold_price, quantity, sale_date) 
+      INSERT INTO sales (product_id, product_code, quantity, sold_price, sale_date) 
       VALUES ($1, $2, $3, $4, $5) 
-      RETURNING *
-    `;
+      RETURNING sale_id
+    `; // quantity here is totalSaleQuantity
     const saleResult = await client.query(saleInsertQuery, [
-      product_code, product_id, sold_price, quantity, sale_date
+      product_id, product_code, totalSaleQuantity, sold_price, sale_date
     ]);
+    const newSaleId = saleResult.rows[0].sale_id;
 
-    // STEP 3: Deduct sold quantity from purchases (FIFO)
-    let remainingQty = quantity;
-    const batchQuery = `
-      SELECT batch_id, quantity 
+    // STEP 3: Determine which batches to use (FIFO) and insert into sales_details
+    let remainingQtyToFulfill = totalSaleQuantity;
+    // Fetch batches ordered by purchase_date (FIFO), also get their cost_per_unit
+    const fifoBatchesQuery = `
+      SELECT purchase_id, quantity, cost_per_unit 
       FROM purchases 
-      WHERE product_code = $1 AND quantity > 0 
-      ORDER BY purchase_date ASC
+      WHERE product_id = $1 AND quantity > 0 AND is_deleted = false
+      ORDER BY purchase_date ASC, batch_id ASC -- Assuming batch_id increments with time or purchase_id
     `;
-    const batches = await client.query(batchQuery, [product_code]);
+    const { rows: availableBatches } = await client.query(fifoBatchesQuery, [product_id]);
 
-    for (let batch of batches.rows) {
-      if (remainingQty <= 0) break;
+    for (const batch of availableBatches) {
+      if (remainingQtyToFulfill <= 0) break;
 
-      const deductQty = Math.min(remainingQty, batch.quantity);
-      remainingQty -= deductQty;
+      const quantityFromThisBatch = Math.min(remainingQtyToFulfill, batch.quantity);
 
-      const updateQuery = `
-        UPDATE purchases 
-        SET quantity = quantity - $1 
-        WHERE product_code = $2 AND batch_id = $3
+      // Insert into sales_details. The trigger will handle deducting from purchases.
+      const salesDetailInsertQuery = `
+        INSERT INTO sales_details 
+          (sale_id, product_id, purchase_id, quantity, unit_cost)
+        VALUES ($1, $2, $3, $4, $5)
       `;
-      await client.query(updateQuery, [deductQty, product_code, batch.batch_id]);
+      await client.query(salesDetailInsertQuery, [
+        newSaleId,
+        product_id,
+        batch.purchase_id,
+        quantityFromThisBatch,
+        batch.cost_per_unit // This is the cost from the purchase batch, stored in sales_details
+      ]);
+
+      remainingQtyToFulfill -= quantityFromThisBatch;
+    }
+
+    // This check should ideally not be hit if the initial totalStock check and FIFO logic are correct,
+    // but it's a safeguard. The trigger's check is per-batch.
+    if (remainingQtyToFulfill > 0) {
+        await client.query('ROLLBACK');
+        // This indicates a logic error or race condition if totalStock was sufficient
+        console.error(`Sale processing error: Could not fulfill entire quantity for sale ${newSaleId}. Remaining: ${remainingQtyToFulfill}`);
+        return res.status(500).json({ error: 'Internal server error: Could not fulfill sale quantity despite initial stock check.' });
     }
 
     await client.query('COMMIT');
-    res.json({ success: true, sale: saleResult.rows[0] });
+    // Fetch the created sale with its details to return to the client (optional, but good practice)
+    // For now, just a success message. You might want to return the full sale object with affected_batches.
+    res.status(201).json({ success: true, message: "Sale created successfully", sale_id: newSaleId });
+
   } catch (error) {
-    await client.query('ROLLBACK'); // Rollback on error
+    await client.query('ROLLBACK');
     console.error("Sale processing error:", error);
-    res.status(500).json({ error: error.message });
+    // Check if the error is from our explicit RAISE EXCEPTION in the trigger
+    if (error.message && error.message.includes('Insufficient stock in purchase')) {
+        return res.status(400).json({ error: error.message });
+    }
+    res.status(500).json({ error: "Failed to process sale. " + error.message });
   } finally {
     client.release();
   }
@@ -383,7 +440,7 @@ app.get("/api/export-csv", async (req, res) => {
     let query = "";
     // Modify query based on the requesting page
     if (page === "purchases") {
-      query = "SELECT * FROM purchases"; // Export purchase data
+      query = "SELECT * FROM purchases"; // Expogrt purchase data
     } else if (page === "sales") {
       query = "SELECT * FROM sales"; // Export sales data
     } else if (page === "products") {
