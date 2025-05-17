@@ -71,7 +71,7 @@ app.get('/api/products', async (req, res) => {
 });
 
 app.post('/api/products', async (req, res) => {
-  const { product_code, description, current_price, brand, size } = req.body;
+  const { product_code, description, size, current_price, brand } = req.body;
   try {
     const result = await pool.query(
       'INSERT INTO products (product_code, description, size, current_price, brand) VALUES ($1, $2, $3, $4, $5) RETURNING *',
@@ -223,7 +223,7 @@ app.delete('/api/purchases/:id', async (req, res) => {
 // 3. Sales (outs) API
 app.get('/api/sales', async (req, res) => {
   try {
-    await pool.query('SET search_path TO inventory_schema'); // Ensure correct schema
+    await pool.query('SET search_path TO inventory_ms_schema'); // Ensure correct schema
     const query = `
       SELECT
         s.sale_id,
