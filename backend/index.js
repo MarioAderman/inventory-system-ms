@@ -81,7 +81,7 @@ app.post('/api/products', async (req, res) => {
   try {
     await client.query('BEGIN');
     await client.query('SET search_path TO inventory_ms_schema');
-    const result = await pool.query(
+    const result = await client.query(
       'INSERT INTO products (product_code, description, size, current_price, brand) VALUES ($1, $2, $3, $4, $5) RETURNING *',
       [product_code, description, size, current_price, brand]
     );
@@ -104,7 +104,7 @@ app.put('/api/products/:product_id', async (req, res) => {
     await client.query('BEGIN');
     await client.query('SET search_path TO inventory_ms_schema');
     // Prevent editing soft-deleted records
-    const existing = await pool.query(
+    const existing = await client.query(
       'SELECT * FROM products WHERE product_id = $1 AND is_deleted = false',
       [product_id]
     );
